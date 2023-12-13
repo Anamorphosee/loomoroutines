@@ -1,9 +1,7 @@
 package dev.reformator.loomoroutines.common;
 
 import dev.reformator.loomoroutines.impl.BaseLoomCoroutine;
-import dev.reformator.loomoroutines.utils.GeneratorIterable;
 import dev.reformator.loomoroutines.utils.GeneratorIterator;
-import jdk.internal.vm.ContinuationScope;
 import org.jetbrains.annotations.NotNull;
 
 import java.math.BigInteger;
@@ -18,6 +16,7 @@ class TestCoroutine extends BaseLoomCoroutine<TestCoroutine> {
 
 public class Main {
     public static void main(String[] args) {
+        checkGenerator();
         checkInnerScope();
     }
 
@@ -35,8 +34,8 @@ public class Main {
                     System.out.println("call5: " + Coroutine.getCoroutinesInScope());
                     context.resume();
                 });
-            }).resume();
-        }).resume();
+            }).start();
+        }).start();
     }
 
     private static void checkGenerator() {
