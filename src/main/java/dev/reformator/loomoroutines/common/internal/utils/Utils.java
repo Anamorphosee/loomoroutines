@@ -26,7 +26,10 @@ public class Utils {
     }
 
     public static @Nullable RunningCoroutine<?> getRunningCoroutineByContext(@Nullable Object context) {
-        return CollectionUtils.find(getRunningCoroutinesInternal(), coroutine -> coroutine.getCoroutineContext() == context);
+        return CollectionUtils.findLast(
+                getRunningCoroutinesInternal(),
+                coroutine -> coroutine.getCoroutineContext() == context
+        );
     }
 
     public static <T> @NotNull SuspendedCoroutine<T> createCoroutine(@NotNull T context, @NotNull Runnable body) {

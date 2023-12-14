@@ -1,6 +1,5 @@
 package dev.reformator.loomoroutines.utils;
 
-import dev.reformator.loomoroutines.common.internal.utils.ConsumerNotNull;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Iterator;

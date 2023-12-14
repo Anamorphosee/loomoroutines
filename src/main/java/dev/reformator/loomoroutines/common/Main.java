@@ -1,6 +1,7 @@
 package dev.reformator.loomoroutines.common;
 
 import dev.reformator.loomoroutines.common.internal.utils.Utils;
+import dev.reformator.loomoroutines.utils.GeneratorIterable;
 import dev.reformator.loomoroutines.utils.GeneratorIterator;
 
 import java.math.BigInteger;
@@ -14,6 +15,7 @@ public class Main {
     }
 
     private static void checkInnerScope() {
+        System.out.println("call0: " + Utils.getRunningCoroutines());
         var point1 = Utils.createCoroutine("context1", () -> {
             System.out.println("call1: " + Utils.getRunningCoroutines());
             var point2 = Utils.createCoroutine("context2", () -> {
@@ -21,16 +23,19 @@ public class Main {
                 Utils.getRunningCoroutines().get(0).suspend();
                 System.out.println("call3: " + Utils.getRunningCoroutines());
                 Utils.getRunningCoroutines().get(1).suspend();
+                System.out.println("call4: " + Utils.getRunningCoroutines());
             }).resume();
-            System.out.println("call4: " + Utils.getRunningCoroutines());
+            System.out.println("call5: " + Utils.getRunningCoroutines());
             point2.ifSuspended().resume();
+            System.out.println("call6: " + Utils.getRunningCoroutines());
         }).resume();
-        System.out.println("call5: " + Utils.getRunningCoroutines());
+        System.out.println("call7: " + Utils.getRunningCoroutines());
         point1.ifSuspended().resume();
+        System.out.println("call8: " + Utils.getRunningCoroutines());
     }
 
     private static void checkGenerator() {
-        var iterator = new GeneratorIterator<BigInteger>((scope) -> {
+        var iterable = new GeneratorIterable<BigInteger>((scope) -> {
             var prev = BigInteger.ZERO;
             var current = BigInteger.ONE;
             while (true) {
@@ -40,7 +45,7 @@ public class Main {
                 current = tmp;
             }
         });
-        StreamSupport.stream(Spliterators.spliteratorUnknownSize(iterator, 0), false)
+        StreamSupport.stream(iterable.spliterator(), false)
                 .limit(20)
                 .forEach(System.out::println);
     }

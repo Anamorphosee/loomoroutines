@@ -1,6 +1,5 @@
 package dev.reformator.loomoroutines.utils;
 
-import dev.reformator.loomoroutines.common.internal.utils.ConsumerNotNull;
 import dev.reformator.loomoroutines.common.NotRunningCoroutine;
 import dev.reformator.loomoroutines.common.internal.utils.Utils;
 import org.jetbrains.annotations.NotNull;
@@ -18,6 +17,7 @@ public class GeneratorIterator<T> implements Iterator<T> {
     private NotRunningCoroutine<Context<T>> point;
 
     public GeneratorIterator(@NotNull ConsumerNotNull<? super Scope<? super T>> generator) {
+        Objects.requireNonNull(generator);
         var context = new Context<>(generator);
         point = Utils.createCoroutine(context, context);
     }

@@ -15,10 +15,12 @@ public class CollectionUtils {
 
     public static <T> int indexOf(@NotNull @Unmodifiable List<T> list, @NotNull Predicate<? super T> predicate) {
         Objects.requireNonNull(predicate);
-        for (int i = 0; i < list.size(); i++) {
-            if (predicate.test(list.get(i))) {
-                return i;
+        var index = 0;
+        for (var item: list) {
+            if (predicate.test(item)) {
+                return index;
             }
+            index++;
         }
         return -1;
     }
@@ -34,6 +36,18 @@ public class CollectionUtils {
     public static <T> @Nullable T find(@NotNull @Unmodifiable Iterable<T> collection, @NotNull Predicate<? super T> predicate) {
         Objects.requireNonNull(predicate);
         for (var item: collection) {
+            if (predicate.test(item)) {
+                return item;
+            }
+        }
+        return null;
+    }
+
+    public static <T> @Nullable T findLast(@NotNull @Unmodifiable List<T> list, @NotNull Predicate<? super T> predicate) {
+        Objects.requireNonNull(predicate);
+        var iterator = list.listIterator(list.size());
+        while (iterator.hasPrevious()) {
+            var item = iterator.previous();
             if (predicate.test(item)) {
                 return item;
             }
