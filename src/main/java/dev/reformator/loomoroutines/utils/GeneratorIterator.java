@@ -1,55 +1,32 @@
 package dev.reformator.loomoroutines.utils;
 
-import dev.reformator.loomoroutines.common.ConsumerNotNull;
-import dev.reformator.loomoroutines.common.SuspendedCoroutineContext;
-import dev.reformator.loomoroutines.impl.BaseLoomCoroutine;
+import dev.reformator.loomoroutines.common.internal.utils.ConsumerNotNull;
+import dev.reformator.loomoroutines.common.CoroutinePoint;
+import dev.reformator.loomoroutines.common.SuspendedCoroutine;
+import dev.reformator.loomoroutines.common.internal.utils.Utils;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 
-public class GeneratorIterator<T> extends BaseLoomCoroutine<GeneratorIterator<T>> implements Iterator<T> {
+public class GeneratorIterator<T> implements Iterator<T> {
     public interface Scope<T> {
         void emit(T value);
     }
 
-    private T buffer = null;
-    private boolean finished = false;
     private boolean buffered = false;
-    private SuspendedCoroutineContext<? extends GeneratorIterator<T>> suspendedCoroutineContext = null;
+    private CoroutinePoint<Context<T>> point;
 
-    private GeneratorIterator(@NotNull Runnable body) {
-        super(body);
-    }
-
-    public static <T> Iterator<T> newInstance(@NotNull ConsumerNotNull<? super Scope<? super T>> generator) {
-        class GeneratorTask implements Runnable, Scope<T> {
-            private GeneratorIterator<T> iterator = null;
-
-            @Override
-            public void run() {
-                generator.accept(this);
-            }
-
-            @Override
-            public void emit(T value) {
-                iterator.suspend((context) -> {
-                    iterator.buffer = value;
-                    iterator.finished = false;
-                    iterator.suspendedCoroutineContext = context;
-                });
-            }
-        }
-        var task = new GeneratorTask();
-        var iterator = new GeneratorIterator<T>(task);
-        task.iterator = iterator;
-        return iterator;
+    public GeneratorIterator(@NotNull ConsumerNotNull<? super Scope<? super T>> generator) {
+        var context = new Context<>(generator);
+        point = Utils.createCoroutine(context, context);
     }
 
     @Override
     public boolean hasNext() {
         buffer();
-        return !finished;
+        return point instanceof SuspendedCoroutine<?>;
     }
 
     @Override
@@ -58,17 +35,33 @@ public class GeneratorIterator<T> extends BaseLoomCoroutine<GeneratorIterator<T>
             throw new NoSuchElementException();
         }
         buffered = false;
-        return buffer;
+        return point.getCoroutineContext().buffer;
     }
 
     private void buffer() {
         if (!buffered) {
-            if (suspendedCoroutineContext == null) {
-                start();
-            } else {
-                suspendedCoroutineContext.resume();
-            }
+            point = ((SuspendedCoroutine<Context<T>>) point).resume();
             buffered = true;
+        }
+    }
+
+    private static class Context<T> implements Runnable, Scope<T> {
+        private final ConsumerNotNull<? super Scope<? super T>> generator;
+        private T buffer;
+
+        public Context(ConsumerNotNull<? super Scope<? super T>> generator) {
+            this.generator = generator;
+        }
+
+        @Override
+        public void run() {
+            generator.accept(this);
+        }
+
+        @Override
+        public void emit(T value) {
+            buffer = value;
+            Objects.requireNonNull(Utils.getRunningCoroutineByContext(this)).suspend();
         }
     }
 }

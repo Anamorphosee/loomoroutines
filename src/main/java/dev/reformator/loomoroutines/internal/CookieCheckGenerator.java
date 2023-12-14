@@ -1,7 +1,9 @@
 package dev.reformator.loomoroutines.internal;
 
-public interface CookieCheckGenerator {
-    Object getNewCookieCheck();
+import org.jetbrains.annotations.Nullable;
 
-    Object getNextCookieCheck(Object cookieCheck);
+public interface CookieCheckGenerator {
+    @Nullable Object getNewCookieCheck();
+
+    @Nullable Object getNextCookieCheck(@Nullable Object cookieCheck);
 }

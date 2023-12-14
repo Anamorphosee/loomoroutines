@@ -1,18 +1,11 @@
 package dev.reformator.loomoroutines.common;
 
-import dev.reformator.loomoroutines.impl.BaseLoomCoroutine;
+import dev.reformator.loomoroutines.common.internal.utils.Utils;
 import dev.reformator.loomoroutines.utils.GeneratorIterator;
-import org.jetbrains.annotations.NotNull;
 
 import java.math.BigInteger;
 import java.util.Spliterators;
 import java.util.stream.StreamSupport;
-
-class TestCoroutine extends BaseLoomCoroutine<TestCoroutine> {
-    public TestCoroutine(@NotNull Runnable body) {
-        super(body);
-    }
-}
 
 public class Main {
     public static void main(String[] args) {
@@ -21,25 +14,23 @@ public class Main {
     }
 
     private static void checkInnerScope() {
-        new TestCoroutine(() -> {
-            System.out.println("call1: " + Coroutine.getCoroutinesInScope());
-            new TestCoroutine(() -> {
-                System.out.println("call2: " + Coroutine.getCoroutinesInScope());
-                Coroutine.getCoroutinesInScope().get(0).suspend((context) -> {
-                    System.out.println("call3: " + Coroutine.getCoroutinesInScope());
-                    context.resume();
-                });
-                System.out.println("call4: " + Coroutine.getCoroutinesInScope());
-                Coroutine.getCoroutinesInScope().get(1).suspend((context) -> {
-                    System.out.println("call5: " + Coroutine.getCoroutinesInScope());
-                    context.resume();
-                });
-            }).start();
-        }).start();
+        var point1 = Utils.createCoroutine("context1", () -> {
+            System.out.println("call1: " + Utils.getRunningCoroutines());
+            var point2 = Utils.createCoroutine("context2", () -> {
+                System.out.println("call2: " + Utils.getRunningCoroutines());
+                Utils.getRunningCoroutines().get(0).suspend();
+                System.out.println("call3: " + Utils.getRunningCoroutines());
+                Utils.getRunningCoroutines().get(1).suspend();
+            }).resume();
+            System.out.println("call4: " + Utils.getRunningCoroutines());
+            point2.ifSuspended().resume();
+        }).resume();
+        System.out.println("call5: " + Utils.getRunningCoroutines());
+        point1.ifSuspended().resume();
     }
 
     private static void checkGenerator() {
-        var iterator = GeneratorIterator.newInstance((scope) -> {
+        var iterator = new GeneratorIterator<BigInteger>((scope) -> {
             var prev = BigInteger.ZERO;
             var current = BigInteger.ONE;
             while (true) {
@@ -50,7 +41,7 @@ public class Main {
             }
         });
         StreamSupport.stream(Spliterators.spliteratorUnknownSize(iterator, 0), false)
-                .limit(10)
+                .limit(20)
                 .forEach(System.out::println);
     }
 }
