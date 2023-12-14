@@ -33,7 +33,10 @@ public class CollectionUtils {
         return list.remove(list.size() - 1);
     }
 
-    public static <T> @Nullable T find(@NotNull @Unmodifiable Iterable<T> collection, @NotNull Predicate<? super T> predicate) {
+    public static <T> @Nullable T find(
+            @NotNull @Unmodifiable Iterable<T> collection,
+            @NotNull Predicate<? super T> predicate
+    ) {
         Objects.requireNonNull(predicate);
         for (var item: collection) {
             if (predicate.test(item)) {
@@ -43,7 +46,10 @@ public class CollectionUtils {
         return null;
     }
 
-    public static <T> @Nullable T findLast(@NotNull @Unmodifiable List<T> list, @NotNull Predicate<? super T> predicate) {
+    public static <T> @Nullable T findLast(
+            @NotNull @Unmodifiable List<T> list,
+            @NotNull Predicate<? super T> predicate
+    ) {
         Objects.requireNonNull(predicate);
         var iterator = list.listIterator(list.size());
         while (iterator.hasPrevious()) {

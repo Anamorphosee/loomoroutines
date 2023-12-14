@@ -1,11 +1,9 @@
-package dev.reformator.loomoroutines.common;
+package dev.reformator.loomoroutines.common.test;
 
 import dev.reformator.loomoroutines.common.internal.utils.Utils;
 import dev.reformator.loomoroutines.utils.GeneratorIterable;
-import dev.reformator.loomoroutines.utils.GeneratorIterator;
 
 import java.math.BigInteger;
-import java.util.Spliterators;
 import java.util.stream.StreamSupport;
 
 public class Main {
