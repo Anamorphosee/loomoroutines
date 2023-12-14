@@ -1,7 +1,7 @@
 package dev.reformator.loomoroutines.common.internal;
 
 import dev.reformator.loomoroutines.common.CoroutineFactory;
-import dev.reformator.loomoroutines.common.CoroutinePoint;
+import dev.reformator.loomoroutines.common.NotRunningCoroutine;
 import dev.reformator.loomoroutines.common.RunningCoroutine;
 import dev.reformator.loomoroutines.common.SuspendedCoroutine;
 import dev.reformator.loomoroutines.common.internal.utils.CollectionUtils;
@@ -49,7 +49,7 @@ public final class LoomSuspendedCoroutine<T> implements SuspendedCoroutine<T> {
     }
 
     @Override
-    public @NotNull CoroutinePoint<T> resume() {
+    public @NotNull NotRunningCoroutine<T> resume() {
         if (dirty.compareAndSet(false, true)) {
             var newCoroutineStack = new Mutable<List<RunningCoroutine<?>>>(Collections.emptyList());
             Utils.performInCoroutinesScope(() -> {
@@ -68,7 +68,7 @@ public final class LoomSuspendedCoroutine<T> implements SuspendedCoroutine<T> {
             });
 
             if (continuation.isDone()) {
-                return new FinishedCoroutineImpl<>(context);
+                return new CompletedCoroutineImpl<>(context);
             } else {
                 return new LoomSuspendedCoroutine<>(continuation, context, newCoroutineStack.get());
             }

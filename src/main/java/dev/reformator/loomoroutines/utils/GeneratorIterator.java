@@ -1,8 +1,7 @@
 package dev.reformator.loomoroutines.utils;
 
 import dev.reformator.loomoroutines.common.internal.utils.ConsumerNotNull;
-import dev.reformator.loomoroutines.common.CoroutinePoint;
-import dev.reformator.loomoroutines.common.SuspendedCoroutine;
+import dev.reformator.loomoroutines.common.NotRunningCoroutine;
 import dev.reformator.loomoroutines.common.internal.utils.Utils;
 import org.jetbrains.annotations.NotNull;
 
@@ -16,7 +15,7 @@ public class GeneratorIterator<T> implements Iterator<T> {
     }
 
     private boolean buffered = false;
-    private CoroutinePoint<Context<T>> point;
+    private NotRunningCoroutine<Context<T>> point;
 
     public GeneratorIterator(@NotNull ConsumerNotNull<? super Scope<? super T>> generator) {
         var context = new Context<>(generator);
@@ -26,7 +25,7 @@ public class GeneratorIterator<T> implements Iterator<T> {
     @Override
     public boolean hasNext() {
         buffer();
-        return point instanceof SuspendedCoroutine<?>;
+        return point.ifSuspended() != null;
     }
 
     @Override
@@ -40,7 +39,7 @@ public class GeneratorIterator<T> implements Iterator<T> {
 
     private void buffer() {
         if (!buffered) {
-            point = ((SuspendedCoroutine<Context<T>>) point).resume();
+            point = Objects.requireNonNull(point.ifSuspended()).resume();
             buffered = true;
         }
     }

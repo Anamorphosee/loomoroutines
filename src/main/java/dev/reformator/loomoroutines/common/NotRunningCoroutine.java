@@ -3,7 +3,7 @@ package dev.reformator.loomoroutines.common;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public sealed interface CoroutinePoint<T> permits SuspendedCoroutine, FinishedCoroutine {
+public sealed interface NotRunningCoroutine<T> permits SuspendedCoroutine, CompletedCoroutine {
     @NotNull T getCoroutineContext();
 
     default @Nullable SuspendedCoroutine<T> ifSuspended() {
