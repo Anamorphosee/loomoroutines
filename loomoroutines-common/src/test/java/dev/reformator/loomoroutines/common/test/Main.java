@@ -1,6 +1,6 @@
 package dev.reformator.loomoroutines.common.test;
 
-import dev.reformator.loomoroutines.common.internal.utils.Utils;
+import dev.reformator.loomoroutines.common.CoroutineUtils;
 import dev.reformator.loomoroutines.utils.GeneratorIterable;
 
 import java.math.BigInteger;
@@ -13,23 +13,23 @@ public class Main {
     }
 
     private static void checkInnerScope() {
-        System.out.println("call0: " + Utils.getRunningCoroutines());
-        var point1 = Utils.createCoroutine("context1", () -> {
-            System.out.println("call1: " + Utils.getRunningCoroutines());
-            var point2 = Utils.createCoroutine("context2", () -> {
-                System.out.println("call2: " + Utils.getRunningCoroutines());
-                Utils.getRunningCoroutines().get(0).suspend();
-                System.out.println("call3: " + Utils.getRunningCoroutines());
-                Utils.getRunningCoroutines().get(1).suspend();
-                System.out.println("call4: " + Utils.getRunningCoroutines());
+        System.out.println("call0: " + CoroutineUtils.getRunningCoroutines());
+        var point1 = CoroutineUtils.createCoroutine("context1", () -> {
+            System.out.println("call1: " + CoroutineUtils.getRunningCoroutines());
+            var point2 = CoroutineUtils.createCoroutine("context2", () -> {
+                System.out.println("call2: " + CoroutineUtils.getRunningCoroutines());
+                CoroutineUtils.getRunningCoroutines().get(0).suspend();
+                System.out.println("call3: " + CoroutineUtils.getRunningCoroutines());
+                CoroutineUtils.getRunningCoroutines().get(1).suspend();
+                System.out.println("call4: " + CoroutineUtils.getRunningCoroutines());
             }).resume();
-            System.out.println("call5: " + Utils.getRunningCoroutines());
+            System.out.println("call5: " + CoroutineUtils.getRunningCoroutines());
             point2.ifSuspended().resume();
-            System.out.println("call6: " + Utils.getRunningCoroutines());
+            System.out.println("call6: " + CoroutineUtils.getRunningCoroutines());
         }).resume();
-        System.out.println("call7: " + Utils.getRunningCoroutines());
+        System.out.println("call7: " + CoroutineUtils.getRunningCoroutines());
         point1.ifSuspended().resume();
-        System.out.println("call8: " + Utils.getRunningCoroutines());
+        System.out.println("call8: " + CoroutineUtils.getRunningCoroutines());
     }
 
     private static void checkGenerator() {

@@ -24,7 +24,11 @@ public final class LoomSuspendedCoroutine<T> implements SuspendedCoroutine<T> {
         @Override
         public <T> SuspendedCoroutine<T> createCoroutine(@NotNull T context, @NotNull Runnable body) {
             var continuation = new Continuation(new ContinuationScope("loomoroutine"), body);
-            return new LoomSuspendedCoroutine<>(continuation, context, Collections.singletonList(new Running<>(continuation, context)));
+            return new LoomSuspendedCoroutine<>(
+                    continuation,
+                    context,
+                    Collections.singletonList(new Running<>(continuation, context))
+            );
         }
     };
 
@@ -53,11 +57,11 @@ public final class LoomSuspendedCoroutine<T> implements SuspendedCoroutine<T> {
         if (dirty.compareAndSet(false, true)) {
             var newCoroutineStack = new Mutable<List<RunningCoroutine<?>>>(Collections.emptyList());
             Utils.performInCoroutinesScope(() -> {
-                Registry.runningCoroutinesScoped.get().addAll(coroutinesStack);
+                Utils.getRunningCoroutines().addAll(coroutinesStack);
                 try {
                     continuation.run();
                 } finally {
-                    var runningCoroutines = Registry.runningCoroutinesScoped.get();
+                    var runningCoroutines = Utils.getRunningCoroutines();
                     var startStackIndex = CollectionUtils.indexOf(
                             runningCoroutines,
                             it -> it instanceof Running<?> running && running.continuation == continuation

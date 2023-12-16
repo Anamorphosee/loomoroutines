@@ -1,12 +1,13 @@
 package dev.reformator.loomoroutines.utils;
 
 import dev.reformator.loomoroutines.common.NotRunningCoroutine;
-import dev.reformator.loomoroutines.common.internal.utils.Utils;
+import dev.reformator.loomoroutines.common.CoroutineUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Objects;
+import java.util.function.Consumer;
 
 public class GeneratorIterator<T> implements Iterator<T> {
     public interface Scope<T> {
@@ -16,10 +17,10 @@ public class GeneratorIterator<T> implements Iterator<T> {
     private boolean buffered = false;
     private NotRunningCoroutine<Context<T>> point;
 
-    public GeneratorIterator(@NotNull ConsumerNotNull<? super Scope<? super T>> generator) {
+    public GeneratorIterator(@NotNull Consumer<? super Scope<? super T>> generator) {
         Objects.requireNonNull(generator);
         var context = new Context<>(generator);
-        point = Utils.createCoroutine(context, context);
+        point = CoroutineUtils.createCoroutine(context, context);
     }
 
     @Override
@@ -45,10 +46,10 @@ public class GeneratorIterator<T> implements Iterator<T> {
     }
 
     private static class Context<T> implements Runnable, Scope<T> {
-        private final ConsumerNotNull<? super Scope<? super T>> generator;
+        private final Consumer<? super Scope<? super T>> generator;
         private T buffer;
 
-        public Context(ConsumerNotNull<? super Scope<? super T>> generator) {
+        public Context(Consumer<? super Scope<? super T>> generator) {
             this.generator = generator;
         }
 
@@ -60,7 +61,7 @@ public class GeneratorIterator<T> implements Iterator<T> {
         @Override
         public void emit(T value) {
             buffer = value;
-            Objects.requireNonNull(Utils.getRunningCoroutineByContext(this)).suspend();
+            Objects.requireNonNull(CoroutineUtils.getRunningCoroutineByContext(this)).suspend();
         }
     }
 }
