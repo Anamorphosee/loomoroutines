@@ -16,6 +16,6 @@ public class GeneratorIterable<T> implements Iterable<T> {
 
     @Override
     public @NotNull Iterator<T> iterator() {
-        return new GeneratorIterator(generator);
+        return new GeneratorIterator<>(generator);
     }
 }

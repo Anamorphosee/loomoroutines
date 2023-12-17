@@ -11,8 +11,8 @@ public class ThreadLocalScoped<T> implements Scoped<T> {
 
     private final ThreadLocal<T> threadLocal = new ThreadLocal<>() {
         @Override
+        @SuppressWarnings("unchecked")
         protected T initialValue() {
-            //noinspection unchecked
             return (T) noValue;
         }
     };

@@ -21,8 +21,17 @@ public class CommonUtils {
         }
     }
 
+    @SuppressWarnings("unchecked")
     public static <T> Predicate<T> getAlwaysTruePredicate() {
-        //noinspection unchecked
         return (Predicate<T>) alwaysTruePredicate;
+    }
+
+    public static void throwUnchecked(@NotNull Throwable exception) {
+        throwUncheckedInternal(exception);
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <T extends Throwable> void throwUncheckedInternal(Throwable exception) throws T {
+        throw (T) exception;
     }
 }

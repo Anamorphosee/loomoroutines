@@ -7,5 +7,6 @@ pluginManagement {
 rootProject.name = "loomoroutines"
 include(
     "loomoroutines-common",
+    "loomoroutines-dispatcher",
     "loomoroutines-kotlincoroutines-common"
 )

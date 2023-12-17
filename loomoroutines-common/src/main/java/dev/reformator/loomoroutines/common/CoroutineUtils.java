@@ -36,18 +36,18 @@ public class CoroutineUtils {
         );
     }
 
+    @SuppressWarnings("unchecked")
     public static <T> @Nullable RunningCoroutine<T> getRunningCoroutineByContext(@NotNull T context) {
-        //noinspection unchecked
         return (RunningCoroutine<T>) getRunningCoroutineByContextPredicate(Predicate.isEqual(context));
     }
 
+    @SuppressWarnings("unchecked")
     public static <T> @Nullable RunningCoroutine<T> getRunningCoroutineByContextPredicate(
             @NotNull Predicate<? super T> predicate,
             @NotNull Class<T> type
     ) {
         Objects.requireNonNull(predicate);
         Objects.requireNonNull(type);
-        //noinspection unchecked
         return (RunningCoroutine<T>) getRunningCoroutineByContextPredicate(context ->
                 type.isInstance(context) && predicate.test((T) context)
         );

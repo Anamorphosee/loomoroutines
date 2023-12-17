@@ -9,7 +9,7 @@ import java.util.stream.StreamSupport;
 public class Main {
     public static void main(String[] args) {
         checkGenerator();
-        checkInnerScope();
+        //checkInnerScope();
     }
 
     private static void checkInnerScope() {
@@ -44,7 +44,7 @@ public class Main {
             }
         });
         StreamSupport.stream(iterable.spliterator(), false)
-                .limit(20)
+                .limit(150)
                 .forEach(System.out::println);
     }
 }
