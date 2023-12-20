@@ -1,6 +1,5 @@
 package dev.reformator.loomoroutines.common.internal;
 
-import dev.reformator.loomoroutines.common.CoroutineFactory;
 import dev.reformator.loomoroutines.common.NotRunningCoroutine;
 import dev.reformator.loomoroutines.common.RunningCoroutine;
 import dev.reformator.loomoroutines.common.SuspendedCoroutine;

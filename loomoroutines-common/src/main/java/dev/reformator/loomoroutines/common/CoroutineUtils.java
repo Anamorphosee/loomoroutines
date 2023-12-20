@@ -37,23 +37,23 @@ public class CoroutineUtils {
     }
 
     @SuppressWarnings("unchecked")
-    public static <T> @Nullable RunningCoroutine<T> getRunningCoroutineByContext(@NotNull T context) {
-        return (RunningCoroutine<T>) getRunningCoroutineByContextPredicate(Predicate.isEqual(context));
+    public static <T> @Nullable RunningCoroutine<? extends T> getRunningCoroutineByContext(@NotNull T context) {
+        return (RunningCoroutine<? extends T>) getRunningCoroutineByContextPredicate(Predicate.isEqual(context));
     }
 
     @SuppressWarnings("unchecked")
-    public static <T> @Nullable RunningCoroutine<T> getRunningCoroutineByContextPredicate(
+    public static <T> @Nullable RunningCoroutine<? extends T> getRunningCoroutineByContextPredicate(
             @NotNull Predicate<? super T> predicate,
             @NotNull Class<T> type
     ) {
         Objects.requireNonNull(predicate);
         Objects.requireNonNull(type);
-        return (RunningCoroutine<T>) getRunningCoroutineByContextPredicate(context ->
+        return (RunningCoroutine<? extends T>) getRunningCoroutineByContextPredicate(context ->
                 type.isInstance(context) && predicate.test((T) context)
         );
     }
 
-    public static <T> @Nullable RunningCoroutine<T> getRunningCoroutineByContextType(@NotNull Class<T> type) {
+    public static <T> @Nullable RunningCoroutine<? extends T> getRunningCoroutineByContextType(@NotNull Class<T> type) {
         return getRunningCoroutineByContextPredicate(CommonUtils.getAlwaysTruePredicate(), type);
     }
 

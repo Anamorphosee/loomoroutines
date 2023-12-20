@@ -1,6 +1,8 @@
 package dev.reformator.loomoroutines.kotlincoroutines.common.test
 
+import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.runBlocking
 import kotlin.concurrent.thread
 import kotlin.coroutines.Continuation
@@ -19,6 +21,12 @@ fun main() {
             cont.resume("h")
         }
         delay(100)
+        async {
+
+        }.invokeOnCompletion {  }
+        flow {
+           emit(100)
+        }
     }
 }
 

@@ -1,6 +1,5 @@
 package dev.reformator.loomoroutines.common.internal;
 
-import dev.reformator.loomoroutines.common.Scoped;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;

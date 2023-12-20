@@ -1,12 +1,17 @@
 package dev.reformator.loomoroutines.utils;
 
+import dev.reformator.loomoroutines.common.CompletedCoroutine;
 import dev.reformator.loomoroutines.common.NotRunningCoroutine;
 import dev.reformator.loomoroutines.common.CoroutineUtils;
+import dev.reformator.loomoroutines.common.SuspendedCoroutine;
+import dev.reformator.loomoroutines.common.internal.utils.CommonUtils;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ConcurrentModificationException;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
 public class GeneratorIterator<T> implements Iterator<T> {
@@ -14,8 +19,8 @@ public class GeneratorIterator<T> implements Iterator<T> {
         void emit(T value);
     }
 
-    private boolean buffered = false;
-    private NotRunningCoroutine<Context<T>> point;
+    private final AtomicReference<BufferState> bufferState = new AtomicReference<>(BufferStateSingletons.NOT_BUFFERED);
+    private SuspendedCoroutine<Context<T>> point;
 
     public GeneratorIterator(@NotNull Consumer<? super Scope<? super T>> generator) {
         Objects.requireNonNull(generator);
@@ -25,23 +30,61 @@ public class GeneratorIterator<T> implements Iterator<T> {
 
     @Override
     public boolean hasNext() {
-        buffer();
-        return point.ifSuspended() != null;
+        return buffer();
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public T next() {
-        if (!hasNext()) {
-            throw new NoSuchElementException();
+        while (true) {
+            if (!buffer()) {
+                throw new NoSuchElementException();
+            }
+            var currentState = bufferState.get();
+            if (currentState instanceof BufferedBufferState buffered &&
+                    bufferState.compareAndSet(buffered, BufferStateSingletons.NOT_BUFFERED)) {
+                return (T) buffered.value();
+            }
         }
-        buffered = false;
-        return point.getCoroutineContext().buffer;
     }
 
-    private void buffer() {
-        if (!buffered) {
-            point = Objects.requireNonNull(point.ifSuspended()).resume();
-            buffered = true;
+    private boolean buffer() {
+        while (true) {
+            var currentState = bufferState.get();
+            if (currentState == BufferStateSingletons.BUFFERING) {
+                throw new ConcurrentModificationException("Iterator is already modifying in an another thread.");
+            }
+            if (currentState instanceof BufferedBufferState) {
+                return true;
+            }
+            if (currentState == BufferStateSingletons.FINISHED) {
+                return false;
+            }
+            if (currentState instanceof ExceptionBufferState e) {
+                CommonUtils.throwUnchecked(e.exception);
+                throw new RuntimeException();
+            }
+            if (bufferState.compareAndSet(BufferStateSingletons.NOT_BUFFERED, BufferStateSingletons.BUFFERING)) {
+                try {
+                    var newPoint = point.resume();
+                    if (newPoint instanceof SuspendedCoroutine<Context<T>> suspended) {
+                        point = suspended;
+                        bufferState.set(new BufferedBufferState(point.getCoroutineContext().buffer));
+                        point.getCoroutineContext().buffer = null;
+                        return true;
+                    }
+                    if (newPoint instanceof CompletedCoroutine<Context<T>>) {
+                        point = null;
+                        bufferState.set(BufferStateSingletons.FINISHED);
+                        return false;
+                    }
+                    throw new RuntimeException();
+                } catch (Throwable exception) {
+                    bufferState.set(new ExceptionBufferState(exception));
+                    CommonUtils.throwUnchecked(exception);
+                    throw new RuntimeException();
+                }
+            }
         }
     }
 
@@ -60,8 +103,19 @@ public class GeneratorIterator<T> implements Iterator<T> {
 
         @Override
         public void emit(T value) {
+            var coroutine = Objects.requireNonNull(CoroutineUtils.getRunningCoroutineByContext(this));
             buffer = value;
-            Objects.requireNonNull(CoroutineUtils.getRunningCoroutineByContext(this)).suspend();
+            coroutine.suspend();
         }
     }
+
+    private sealed interface BufferState permits BufferStateSingletons, BufferedBufferState, ExceptionBufferState { }
+
+    private enum BufferStateSingletons implements BufferState {
+        NOT_BUFFERED, BUFFERING, FINISHED
+    }
+
+    private record BufferedBufferState(Object value) implements BufferState { }
+
+    private record ExceptionBufferState(Throwable exception) implements BufferState { }
 }

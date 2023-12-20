@@ -1,4 +1,4 @@
-package dev.reformator.loomoroutines.common;
+package dev.reformator.loomoroutines.common.internal;
 
 import org.jetbrains.annotations.NotNull;
 
