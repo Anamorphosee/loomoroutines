@@ -26,8 +26,10 @@ public class CommonUtils {
         return (Predicate<T>) alwaysTruePredicate;
     }
 
-    public static void throwUnchecked(@NotNull Throwable exception) {
+    @SuppressWarnings("UnusedReturnValue")
+    public static RuntimeException throwUnchecked(@NotNull Throwable exception) {
         throwUncheckedInternal(exception);
+        throw new RuntimeException("Something wrong. Not reachable code.");
     }
 
     @SuppressWarnings("unchecked")

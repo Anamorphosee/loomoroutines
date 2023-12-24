@@ -6,7 +6,7 @@ import dev.reformator.loomoroutines.common.SuspendedCoroutine;
 import dev.reformator.loomoroutines.common.internal.utils.CollectionUtils;
 import dev.reformator.loomoroutines.common.internal.utils.Mutable;
 import dev.reformator.loomoroutines.common.internal.utils.CommonUtils;
-import dev.reformator.loomoroutines.common.internal.utils.Utils;
+import dev.reformator.loomoroutines.common.internal.utils.InternalCoroutineUtils;
 import jdk.internal.vm.Continuation;
 import jdk.internal.vm.ContinuationScope;
 import org.jetbrains.annotations.NotNull;
@@ -55,12 +55,12 @@ public final class LoomSuspendedCoroutine<T> implements SuspendedCoroutine<T> {
     public @NotNull NotRunningCoroutine<T> resume() {
         if (dirty.compareAndSet(false, true)) {
             var newCoroutineStack = new Mutable<List<RunningCoroutine<?>>>(Collections.emptyList());
-            Utils.performInCoroutinesScope(() -> {
-                Utils.getRunningCoroutines().addAll(coroutinesStack);
+            InternalCoroutineUtils.performInCoroutinesScope(() -> {
+                InternalCoroutineUtils.getRunningCoroutines().addAll(coroutinesStack);
                 try {
                     continuation.run();
                 } finally {
-                    var runningCoroutines = Utils.getRunningCoroutines();
+                    var runningCoroutines = InternalCoroutineUtils.getRunningCoroutines();
                     var startStackIndex = CollectionUtils.indexOf(
                             runningCoroutines,
                             it -> it instanceof Running<?> running && running.continuation == continuation

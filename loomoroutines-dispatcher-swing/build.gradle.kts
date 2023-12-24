@@ -1,7 +1,5 @@
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-
 plugins {
-    kotlin("jvm")
+    id("java")
 }
 
 repositories {
@@ -10,6 +8,8 @@ repositories {
 
 dependencies {
     implementation("org.jetbrains:annotations:${properties["jetbrainsAnnotationsVersion"]}")
+    implementation(project(":loomoroutines-common"))
+    implementation(project(":loomoroutines-dispatcher"))
 
     testImplementation("org.junit.jupiter:junit-jupiter:${properties["jupiterVersion"]}")
 }
@@ -19,18 +19,6 @@ java {
     targetCompatibility = JavaVersion.VERSION_19
 }
 
-kotlin {
-    compilerOptions {
-        jvmTarget = JvmTarget.JVM_19
-    }
-}
-
 tasks.test {
     useJUnitPlatform()
-}
-
-tasks.withType(JavaCompile::class.java) {
-    options.compilerArgs.plusAssign(listOf(
-        "--add-exports", "java.base/jdk.internal.vm=dev.reformator.loomoroutines.common"
-    ))
 }

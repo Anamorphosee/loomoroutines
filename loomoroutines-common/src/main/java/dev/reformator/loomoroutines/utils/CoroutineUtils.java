@@ -1,10 +1,12 @@
-package dev.reformator.loomoroutines.common;
+package dev.reformator.loomoroutines.utils;
 
+import dev.reformator.loomoroutines.common.RunningCoroutine;
+import dev.reformator.loomoroutines.common.SuspendedCoroutine;
 import dev.reformator.loomoroutines.common.internal.Registry;
 import dev.reformator.loomoroutines.common.internal.utils.CollectionUtils;
 import dev.reformator.loomoroutines.common.internal.utils.CommonUtils;
 import dev.reformator.loomoroutines.common.internal.utils.Mutable;
-import dev.reformator.loomoroutines.common.internal.utils.Utils;
+import dev.reformator.loomoroutines.common.internal.utils.InternalCoroutineUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
@@ -57,7 +59,7 @@ public class CoroutineUtils {
         return getRunningCoroutineByContextPredicate(CommonUtils.getAlwaysTruePredicate(), type);
     }
 
-    public static <T> @NotNull SuspendedCoroutine<T> createCoroutine(@NotNull T context, @NotNull Runnable body) {
+    public static <T> @NotNull SuspendedCoroutine<T> createCoroutine(T context, @NotNull Runnable body) {
         return Registry.coroutineFactory.createCoroutine(context, body);
     }
 
@@ -65,7 +67,7 @@ public class CoroutineUtils {
         var result = new Mutable<List<RunningCoroutine<?>>>(Collections.emptyList());
         Registry.runningCoroutinesScoped.performReusable(
                 emptyListSupplier,
-                () -> result.set(Utils.getRunningCoroutines())
+                () -> result.set(InternalCoroutineUtils.getRunningCoroutines())
         );
         return result.get();
     }

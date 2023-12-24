@@ -8,8 +8,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
 
-public class Utils {
-    private Utils() { }
+public class InternalCoroutineUtils {
+    private InternalCoroutineUtils() { }
 
     private static final Supplier<List<RunningCoroutine<?>>> newListSupplier = ArrayList::new;
 

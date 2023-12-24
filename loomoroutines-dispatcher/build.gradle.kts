@@ -21,3 +21,7 @@ java {
 tasks.test {
     useJUnitPlatform()
 }
+
+tasks.withType(JavaCompile::class.java) {
+    options.compilerArgs.plusAssign(listOf("-Xlint:unchecked", "-Xlint:preview"))
+}

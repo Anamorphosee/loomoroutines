@@ -1,8 +1,6 @@
 package dev.reformator.loomoroutines.utils;
 
 import dev.reformator.loomoroutines.common.CompletedCoroutine;
-import dev.reformator.loomoroutines.common.NotRunningCoroutine;
-import dev.reformator.loomoroutines.common.CoroutineUtils;
 import dev.reformator.loomoroutines.common.SuspendedCoroutine;
 import dev.reformator.loomoroutines.common.internal.utils.CommonUtils;
 import org.jetbrains.annotations.NotNull;
@@ -61,8 +59,7 @@ public class GeneratorIterator<T> implements Iterator<T> {
                 return false;
             }
             if (currentState instanceof ExceptionBufferState e) {
-                CommonUtils.throwUnchecked(e.exception);
-                throw new RuntimeException();
+                throw CommonUtils.throwUnchecked(e.exception);
             }
             if (bufferState.compareAndSet(BufferStateSingletons.NOT_BUFFERED, BufferStateSingletons.BUFFERING)) {
                 try {

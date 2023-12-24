@@ -9,6 +9,11 @@ public class Mutable<T> {
         this.value = value;
     }
 
+    @SuppressWarnings("DataFlowIssue")
+    public Mutable() {
+        this(null);
+    }
+
     public final @NotNull T get() {
         return value;
     }

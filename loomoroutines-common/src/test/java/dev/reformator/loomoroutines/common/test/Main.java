@@ -1,6 +1,6 @@
 package dev.reformator.loomoroutines.common.test;
 
-import dev.reformator.loomoroutines.common.CoroutineUtils;
+import dev.reformator.loomoroutines.utils.CoroutineUtils;
 import dev.reformator.loomoroutines.utils.GeneratorIterable;
 
 import java.math.BigInteger;
