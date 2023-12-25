@@ -21,20 +21,20 @@ class LoomSuspendedCoroutine<out T>(
         if (dirty.compareAndSet(false, true)) {
             var newCoroutineStack: List<RunningCoroutine<*>>? = null
             performInRunningCoroutinesScope {
-                runningCoroutines.addAll(coroutinesStack)
+                runningCoroutinesInternal.addAll(coroutinesStack)
                 try {
                     continuation.run()
                 } finally {
-                    runningCoroutines.let { runningCoroutines ->
+                    runningCoroutinesInternal.let { runningCoroutines ->
                         val index = runningCoroutines.indexOfFirst {
-                            it is LoomRunningCoroutine<*> && it.continuation == continuation
+                            it is LoomRunningCoroutine<*> && it.continuation === continuation
                         }
                         if (index == 0) {
-                            newCoroutineStack = runningCoroutines.toList()
+                            newCoroutineStack = runningCoroutines.copyList()
                             runningCoroutines.clear()
                         } else {
-                            newCoroutineStack = runningCoroutines.subList(index, runningCoroutines.lastIndex).toList()
-                            repeat(index - runningCoroutines.lastIndex) {
+                            newCoroutineStack = runningCoroutines.subList(index, runningCoroutines.size).copyList()
+                            repeat(runningCoroutines.size - index) {
                                 runningCoroutines.removeLast()
                             }
                         }

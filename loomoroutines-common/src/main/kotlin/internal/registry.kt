@@ -14,5 +14,5 @@ fun performInRunningCoroutinesScope(action: Action) {
     runningCoroutinesScoped.performReusable(newRunningCoroutinesListGenerator, action)
 }
 
-val runningCoroutines: MutableList<RunningCoroutine<*>>
+val runningCoroutinesInternal: MutableList<RunningCoroutine<*>>
     get() = runningCoroutinesScoped.get()
