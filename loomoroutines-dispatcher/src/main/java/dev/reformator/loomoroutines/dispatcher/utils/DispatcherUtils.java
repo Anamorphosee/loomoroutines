@@ -3,7 +3,6 @@ package dev.reformator.loomoroutines.dispatcher.utils;
 import dev.reformator.loomoroutines.dispatcher.Dispatcher;
 import dev.reformator.loomoroutines.dispatcher.Promise;
 import dev.reformator.loomoroutines.utils.CoroutineUtils;
-import dev.reformator.loomoroutines.common.RunningCoroutine;
 import dev.reformator.loomoroutines.common.internal.utils.Mutable;
 import dev.reformator.loomoroutines.dispatcher.internal.DispatcherContext;
 import dev.reformator.loomoroutines.dispatcher.internal.DispatcherContextImpl;

@@ -1,7 +1,6 @@
 package dev.reformator.loomoroutines.dispatcher.internal;
 
 import dev.reformator.loomoroutines.utils.CoroutineUtils;
-import dev.reformator.loomoroutines.common.RunningCoroutine;
 import dev.reformator.loomoroutines.common.internal.utils.CommonUtils;
 import dev.reformator.loomoroutines.common.internal.utils.Mutable;
 import dev.reformator.loomoroutines.dispatcher.Dispatcher;

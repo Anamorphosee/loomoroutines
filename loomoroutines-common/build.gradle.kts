@@ -9,7 +9,7 @@ repositories {
 }
 
 dependencies {
-    implementation("org.jetbrains:annotations:${properties["jetbrainsAnnotationsVersion"]}")
+    compileOnly("org.jetbrains.kotlin:kotlin-stdlib:${properties["kotlinVersion"]}")
 
     testImplementation("org.junit.jupiter:junit-jupiter:${properties["jupiterVersion"]}")
 }
@@ -22,6 +22,7 @@ java {
 kotlin {
     compilerOptions {
         jvmTarget = JvmTarget.JVM_19
+        freeCompilerArgs.set(freeCompilerArgs.get() + listOf("-include-runtime"))
     }
 }
 

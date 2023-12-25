@@ -1,8 +1,5 @@
 package dev.reformator.loomoroutines.dispatcher.internal.utils;
 
-import dev.reformator.loomoroutines.common.CompletedCoroutine;
-import dev.reformator.loomoroutines.common.NotRunningCoroutine;
-import dev.reformator.loomoroutines.common.SuspendedCoroutine;
 import dev.reformator.loomoroutines.dispatcher.Dispatcher;
 import dev.reformator.loomoroutines.dispatcher.ExceptionalPromiseResult;
 import dev.reformator.loomoroutines.dispatcher.SucceedPromiseResult;
