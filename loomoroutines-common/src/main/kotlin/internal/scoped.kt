@@ -1,10 +1,6 @@
 package dev.reformator.loomoroutines.common.internal
 
-import dev.reformator.loomoroutines.common.Action
-import dev.reformator.loomoroutines.common.Generator
-import dev.reformator.loomoroutines.common.invoke
-import org.jetbrains.annotations.Contract
-import kotlin.contracts.contract
+import dev.reformator.loomoroutines.common.internal.invoke
 
 interface Scoped<T> {
     fun performReusable(ifNotSet: Generator<T>, action: Action)

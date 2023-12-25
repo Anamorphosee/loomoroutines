@@ -1,6 +1,5 @@
 package dev.reformator.loomoroutines.common.internal
 
-import dev.reformator.loomoroutines.common.Action
 import dev.reformator.loomoroutines.common.CompletedCoroutine
 import dev.reformator.loomoroutines.common.SuspendedCoroutine
 

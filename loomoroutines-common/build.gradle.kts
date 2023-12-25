@@ -42,12 +42,6 @@ tasks.test {
     useJUnitPlatform()
 }
 
-tasks.withType(JavaCompile::class.java) {
-    options.compilerArgs.plusAssign(listOf(
-        "--add-exports", "java.base/jdk.internal.vm=dev.reformator.loomoroutines.common"
-    ))
-}
-
 tasks.withType(KotlinCompile::class.java) {
     doLast {
         layout.buildDirectory.get()
@@ -86,7 +80,12 @@ private val interfaceImplementationsToRemove = listOf(
     "kotlin/jvm/internal/markers/KMappedMarker"
 )
 
+private val kotlinApiAnnotationDesc = "Ldev/reformator/loomoroutines/common/internal/KotlinApi;"
+
 fun transformClass(node: ClassNode): Boolean {
+    if (node.invisibleAnnotations?.find { it.desc == kotlinApiAnnotationDesc } != null) {
+        return false
+    }
     var doTransform = false
     node.methods.orEmpty().forEach { method ->
         method.instructions?.let { instructions ->

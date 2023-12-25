@@ -1,7 +1,5 @@
 package dev.reformator.loomoroutines.common.internal
 
-import dev.reformator.loomoroutines.common.Action
-import dev.reformator.loomoroutines.common.Generator
 import dev.reformator.loomoroutines.common.RunningCoroutine
 
 val runningCoroutinesScoped: Scoped<MutableList<RunningCoroutine<*>>> = ThreadLocalScoped()

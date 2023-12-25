@@ -9,11 +9,15 @@ public class Intrinsics {
     private Intrinsics() { }
 
     public static void checkNotNullParameter(Object parameter, String name) {
-        Objects.requireNonNull(parameter, name + " must not be null.");
+        if (parameter == null) {
+            throw new NullPointerException("parameter `" + name + "` must not be null.");
+        }
     }
 
-    public static void checkNotNullExpressionValue(Object parameter, String name) {
-        checkNotNullParameter(parameter, name);
+    public static void checkNotNullExpressionValue(Object parameter, String expression) {
+        if (parameter == null) {
+            throw new NullPointerException(expression + " must not be null.");
+        }
     }
 
     public static void checkNotNull(Object object) {
