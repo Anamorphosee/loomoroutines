@@ -4,5 +4,5 @@ module dev.reformator.loomoroutines.dispatcher.swing {
     requires org.jetbrains.annotations;
     requires java.desktop;
 
-    exports dev.reformator.loomoroutines.dispatcher.swing;
+    exports dev.reformator.loomoroutines.dispatcher.test.swing;
 }

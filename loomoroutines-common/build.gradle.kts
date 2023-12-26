@@ -1,5 +1,4 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     id("dev.reformator.javalibinkotlin")
@@ -11,6 +10,8 @@ repositories {
 
 dependencies {
     compileOnly("org.jetbrains.kotlin:kotlin-stdlib:${kotlin.coreLibrariesVersion}")
+
+    implementation("org.apache.logging.log4j:log4j-api:${properties["log4jVersion"]}")
 
     testImplementation("org.junit.jupiter:junit-jupiter:${properties["jupiterVersion"]}")
 }

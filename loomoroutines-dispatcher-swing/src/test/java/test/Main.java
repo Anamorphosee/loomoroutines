@@ -2,7 +2,7 @@ package test;
 
 import dev.reformator.loomoroutines.common.internal.utils.CommonUtils;
 import dev.reformator.loomoroutines.dispatcher.Dispatcher;
-import dev.reformator.loomoroutines.dispatcher.swing.SwingDispatcher;
+import dev.reformator.loomoroutines.dispatcher.test.swing.SwingDispatcher;
 import dev.reformator.loomoroutines.dispatcher.utils.DispatcherUtils;
 
 import javax.swing.*;

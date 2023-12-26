@@ -1,10 +1,9 @@
-package dev.reformator.loomoroutines.dispatcher.swing;
+package dev.reformator.loomoroutines.dispatcher.test.swing;
 
 import dev.reformator.loomoroutines.dispatcher.Dispatcher;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.SwingUtilities;
-import java.io.Serializable;
 import java.time.Duration;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
