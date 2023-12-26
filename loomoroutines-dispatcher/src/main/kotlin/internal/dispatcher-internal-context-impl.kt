@@ -39,10 +39,10 @@ class DispatcherContextImpl<T>: DispatcherContext<T>, Promise<T> {
         run {
             val semaphore = Semaphore(0)
             var result: PromiseResult<T>? = null
-            subscribe {
+            subscribe(Callback {
                 result = it
                 semaphore.release()
-            }
+            })
             semaphore.acquire()
             return result!!.get()
         }

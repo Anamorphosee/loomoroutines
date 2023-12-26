@@ -4,12 +4,12 @@ import dev.reformator.loomoroutines.common.CompletedCoroutine
 import dev.reformator.loomoroutines.common.SuspendedCoroutine
 import dev.reformator.loomoroutines.common.internal.Action
 import dev.reformator.loomoroutines.common.internal.invoke
-import dev.reformator.loomoroutines.common.internal.kotlinstdlibstub.ObjectRef
+import dev.reformator.loomoroutines.common.internal.kotlinstdlibstub.Ref
 import dev.reformator.loomoroutines.dispatcher.Dispatcher
 import dev.reformator.loomoroutines.dispatcher.ExceptionalPromiseResult
 import dev.reformator.loomoroutines.dispatcher.SucceedPromiseResult
 
-fun <T> Dispatcher.dispatch(coroutine: SuspendedCoroutine<DispatcherContext<T>>, result: ObjectRef<T>) {
+fun <T> Dispatcher.dispatch(coroutine: SuspendedCoroutine<DispatcherContext<T>>, result: Ref.ObjectRef<T>) {
     if (canExecuteInCurrentThread()) {
         dispatchInCurrentThread(coroutine, result)
     } else {
@@ -19,7 +19,7 @@ fun <T> Dispatcher.dispatch(coroutine: SuspendedCoroutine<DispatcherContext<T>>,
 
 private fun <T> Dispatcher.dispatchInCurrentThread(
     coroutine: SuspendedCoroutine<DispatcherContext<T>>,
-    result: ObjectRef<T>
+    result: Ref.ObjectRef<T>
 ) {
     val context = coroutine.coroutineContext
     context.dispatcher = this

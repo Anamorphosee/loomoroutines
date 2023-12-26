@@ -45,7 +45,8 @@ fun getClassNode(file: File): ClassNode {
 
 private val typeReplacement = mapOf(
     "kotlin/jvm/internal/Intrinsics" to "dev/reformator/loomoroutines/common/internal/kotlinstdlibstub/Intrinsics",
-    "kotlin/jvm/internal/Ref\$ObjectRef" to "dev/reformator/loomoroutines/common/internal/kotlinstdlibstub/ObjectRef",
+    "kotlin/jvm/internal/Ref" to "dev/reformator/loomoroutines/common/internal/kotlinstdlibstub/Ref",
+    "kotlin/jvm/internal/Ref\$ObjectRef" to "dev/reformator/loomoroutines/common/internal/kotlinstdlibstub/Ref\$ObjectRef",
     "kotlin/collections/CollectionsKt" to "dev/reformator/loomoroutines/common/internal/kotlinstdlibstub/Intrinsics",
     "kotlin/NoWhenBranchMatchedException" to "dev/reformator/loomoroutines/common/internal/kotlinstdlibstub/KotlinException"
 )
@@ -61,7 +62,23 @@ private fun transformClass(node: ClassNode): Boolean {
         return false
     }
     var doTransform = false
-    node.methods.orEmpty().forEach { method ->
+    node.fields?.forEach { field ->
+        if (transformField(field.desc) { field.desc = it }) {
+            doTransform = true
+        }
+        if (transformField(field.signature) { field.signature = it }) {
+            doTransform = true
+        }
+    }
+    node.innerClasses?.forEach { innerClass ->
+        if (transformField(innerClass.name) { innerClass.name = it }) {
+            doTransform = true
+        }
+        if (transformField(innerClass.outerName) { innerClass.outerName = it }) {
+            doTransform = true
+        }
+    }
+    node.methods?.forEach { method ->
         method.instructions?.let { instructions ->
             instructions.forEach { instruction ->
                 if (instruction is MethodInsnNode) {
