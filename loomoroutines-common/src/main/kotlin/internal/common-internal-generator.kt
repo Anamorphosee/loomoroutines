@@ -9,7 +9,7 @@ class GeneratorIterator<out T>(generator: Callback<GeneratorScope<T>>): Iterator
 
     init {
         val context = GeneratorIteratorContext<T>()
-        coroutine = createCoroutine(context) { generator(context) }
+        coroutine = createCoroutine(context, Action { generator(context) })
     }
 
     override fun hasNext(): Boolean =

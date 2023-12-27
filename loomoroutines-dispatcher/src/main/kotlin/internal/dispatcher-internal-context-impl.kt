@@ -26,12 +26,12 @@ class DispatcherContextImpl<T>: DispatcherContext<T>, Promise<T> {
         //In dispatcher coroutine
         if (isInDispatcher) {
             var result: PromiseResult<T>? = null
-            await { awakener ->
+            await(Callback{ awakener ->
                 subscribe {
                     result = it
                     awakener()
                 }
-            }
+            })
             return result!!.get()
         }
 
@@ -39,10 +39,10 @@ class DispatcherContextImpl<T>: DispatcherContext<T>, Promise<T> {
         run {
             val semaphore = Semaphore(0)
             var result: PromiseResult<T>? = null
-            subscribe(Callback {
+            subscribe {
                 result = it
                 semaphore.release()
-            })
+            }
             semaphore.acquire()
             return result!!.get()
         }

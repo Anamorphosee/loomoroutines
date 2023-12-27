@@ -45,10 +45,19 @@ fun getClassNode(file: File): ClassNode {
 
 private val typeReplacement = mapOf(
     "kotlin/jvm/internal/Intrinsics" to "dev/reformator/loomoroutines/common/internal/kotlinstdlibstub/Intrinsics",
+    "kotlin/collections/CollectionsKt" to "dev/reformator/loomoroutines/common/internal/kotlinstdlibstub/Intrinsics",
+
     "kotlin/jvm/internal/Ref" to "dev/reformator/loomoroutines/common/internal/kotlinstdlibstub/Ref",
     "kotlin/jvm/internal/Ref\$ObjectRef" to "dev/reformator/loomoroutines/common/internal/kotlinstdlibstub/Ref\$ObjectRef",
-    "kotlin/collections/CollectionsKt" to "dev/reformator/loomoroutines/common/internal/kotlinstdlibstub/Intrinsics",
-    "kotlin/NoWhenBranchMatchedException" to "dev/reformator/loomoroutines/common/internal/kotlinstdlibstub/KotlinException"
+
+    "kotlin/NoWhenBranchMatchedException" to "dev/reformator/loomoroutines/common/internal/kotlinstdlibstub/KotlinException",
+
+    "kotlin/Unit" to "dev/reformator/loomoroutines/common/internal/kotlinstdlibstub/Unit",
+    "kotlin/Function" to "dev/reformator/loomoroutines/common/internal/kotlinstdlibstub/Function",
+    "kotlin/jvm/internal/FunctionBase" to "dev/reformator/loomoroutines/common/internal/kotlinstdlibstub/FunctionBase",
+    "kotlin/jvm/internal/Lambda" to "dev/reformator/loomoroutines/common/internal/kotlinstdlibstub/Lambda",
+    "kotlin/jvm/functions/Function0" to "dev/reformator/loomoroutines/common/internal/kotlinstdlibstub/Function0",
+    "kotlin/jvm/functions/Function1" to "dev/reformator/loomoroutines/common/internal/kotlinstdlibstub/Function1"
 )
 
 private val interfaceImplementationsToRemove = listOf(
@@ -62,6 +71,16 @@ private fun transformClass(node: ClassNode): Boolean {
         return false
     }
     var doTransform = false
+    if (transformField(node.superName) { node.superName = it }) {
+        doTransform = true
+    }
+    node.interfaces?.let { interfaces ->
+        for (i in interfaces.indices) {
+            if (transformField(interfaces[i]) { interfaces[i] = it }) {
+                doTransform = true
+            }
+        }
+    }
     node.fields?.forEach { field ->
         if (transformField(field.desc) { field.desc = it }) {
             doTransform = true
