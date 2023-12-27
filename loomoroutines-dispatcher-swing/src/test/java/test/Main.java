@@ -1,9 +1,8 @@
 package test;
 
-import dev.reformator.loomoroutines.common.internal.utils.CommonUtils;
 import dev.reformator.loomoroutines.dispatcher.Dispatcher;
+import dev.reformator.loomoroutines.dispatcher.DispatcherUtils;
 import dev.reformator.loomoroutines.dispatcher.test.swing.SwingDispatcher;
-import dev.reformator.loomoroutines.dispatcher.utils.DispatcherUtils;
 
 import javax.swing.*;
 import java.io.IOException;
@@ -18,20 +17,24 @@ public class Main {
         var button = new JButton("Test");
         button.addActionListener(event -> DispatcherUtils.dispatch(SwingDispatcher.instance, () -> {
             button.setText("CLICKED!");
-            button.setText(DispatcherUtils.executeInDispatcher(Dispatcher.VirtualThread, () -> {
+            button.setText(DispatcherUtils.doIn(Dispatcher.virtualThreads, () -> {
                 String str;
                 try {
-                   var bytes = new URL("https://raw.githubusercontent.com/Anamorphosee/stacktrace-decoroutinator/master/README.md")
-                           .openStream()
-                           .readAllBytes();
-                   str = new String(bytes);
+                    var bytes = new URL("https://raw.githubusercontent.com/Anamorphosee/stacktrace-decoroutinator/master/README.md")
+                            .openStream()
+                            .readAllBytes();
+                    str = new String(bytes);
                 } catch (IOException e) {
-                    throw CommonUtils.throwUnchecked(e);
+                    throw new RuntimeException(e);
                 }
                 return str;
             }));
             DispatcherUtils.delay(Duration.ofSeconds(3));
             mainFrame.setTitle("3 SECONDS PAST!");
+            DispatcherUtils.delay(Duration.ofSeconds(3));
+            mainFrame.setTitle("Over!");
+            button.setText("Over!");
+            return null;
         }));
         mainFrame.add(button);
         mainFrame.setVisible(true);

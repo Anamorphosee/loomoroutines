@@ -2,9 +2,29 @@ package dev.reformator.loomoroutines.dispatcher
 
 import dev.reformator.loomoroutines.common.internal.Action
 import dev.reformator.loomoroutines.common.internal.Callback
+import dev.reformator.loomoroutines.common.internal.invoke
 import java.time.Duration
 
 interface Dispatcher {
+    companion object {
+        @JvmField
+        val virtualThreads = object: Dispatcher {
+            override fun execute(action: Action) {
+                Thread.startVirtualThread(action)
+            }
+
+            override fun canExecuteInCurrentThread(): Boolean =
+                Thread.currentThread().isVirtual
+
+            override fun scheduleExecute(delay: Duration, action: Action) {
+                Thread.startVirtualThread {
+                    Thread.sleep(delay)
+                    action()
+                }
+            }
+        }
+    }
+
     fun execute(action: Action) {
         scheduleExecute(Duration.ZERO, action)
     }
