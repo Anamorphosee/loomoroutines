@@ -1,5 +1,3 @@
-@file:KotlinApi
-
 package dev.reformator.loomoroutines.common.internal
 
 import org.slf4j.Logger

@@ -1,10 +1,9 @@
-@file:KotlinApi
+@file:JvmName("KotlinDispatcherUtils")
 
 package dev.reformator.loomoroutines.dispatcher
 
 import dev.reformator.loomoroutines.common.internal.Callback
 import dev.reformator.loomoroutines.common.internal.Generator
-import dev.reformator.loomoroutines.common.internal.KotlinApi
 import dev.reformator.loomoroutines.common.internal.invoke
 import kotlin.time.Duration
 import kotlin.time.toJavaDuration

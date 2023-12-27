@@ -1,11 +1,9 @@
 @file:JvmName("KotlinCoroutineUtils")
-@file:KotlinApi
 
 package dev.reformator.loomoroutines.common
 
 import dev.reformator.loomoroutines.common.internal.Action
 import dev.reformator.loomoroutines.common.internal.Callback
-import dev.reformator.loomoroutines.common.internal.KotlinApi
 import dev.reformator.loomoroutines.common.internal.Predicate
 import java.util.stream.Stream
 

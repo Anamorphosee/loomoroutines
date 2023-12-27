@@ -44,7 +44,3 @@ inline operator fun <T> Callback<T>.invoke(value: T) {
 @Suppress("NOTHING_TO_INLINE")
 inline operator fun <T> Predicate<T>.invoke(value: T): Boolean =
     test(value)
-
-@Target(AnnotationTarget.CLASS, AnnotationTarget.FILE)
-@Retention(AnnotationRetention.BINARY)
-annotation class KotlinApi

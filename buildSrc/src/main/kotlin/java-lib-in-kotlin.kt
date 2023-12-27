@@ -68,7 +68,7 @@ private val interfaceImplementationsToRemove = listOf(
 private val kotlinApiAnnotationDesc = "Ldev/reformator/loomoroutines/common/internal/KotlinApi;"
 
 private fun transformClass(node: ClassNode): Boolean {
-    if (node.invisibleAnnotations?.find { it.desc == kotlinApiAnnotationDesc } != null) {
+    if (node.sourceFile.orEmpty().endsWith("-kotlinapi.kt")) {
         return false
     }
     var doTransform = false

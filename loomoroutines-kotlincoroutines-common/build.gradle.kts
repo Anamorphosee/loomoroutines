@@ -11,6 +11,7 @@ repositories {
 dependencies {
     implementation(project(":loomoroutines-common"))
 
+    testRuntimeOnly("ch.qos.logback:logback-classic:${properties["logbackVersion"]}")
     testImplementation("org.junit.jupiter:junit-jupiter:${properties["jupiterVersion"]}")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:${properties["kotlinxCoroutinesVersion"]}")
 }

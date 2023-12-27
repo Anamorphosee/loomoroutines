@@ -1,7 +1,9 @@
 package dev.reformator.loomoroutines.kotlincoroutines.common.test
 
-import dev.reformator.loomoroutines.utils.CoroutineUtils
 import dev.reformator.loomoroutines.common.SuspendedCoroutine
+import dev.reformator.loomoroutines.common.createCoroutine
+import dev.reformator.loomoroutines.common.runningCoroutines
+import dev.reformator.loomoroutines.common.toSuspended
 import java.util.concurrent.atomic.AtomicReference
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.thread
@@ -14,14 +16,14 @@ fun main() {
     val mon = ReentrantLock()
     val cor = AtomicReference<SuspendedCoroutine<*>?>(null)
     thread {
-        CoroutineUtils.createCoroutine(Unit) {
+        createCoroutine(Unit) {
             mon.withLock {
                 println("thread 1 lock: ${mon.isHeldByCurrentThread}")
-                CoroutineUtils.getRunningCoroutines().last().suspend()
+                runningCoroutines.last().suspend()
                 println("thread 2 lock: ${mon.isHeldByCurrentThread}")
             }
         }.also {
-            cor.set(it.resume().ifSuspended())
+            cor.set(it.resume().toSuspended()!!)
         }
         Thread.sleep(1000)
     }
