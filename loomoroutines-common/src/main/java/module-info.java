@@ -1,6 +1,6 @@
 module dev.reformator.loomoroutines.common {
     requires static kotlin.stdlib;
-    requires org.apache.logging.log4j;
+    requires org.slf4j;
 
     exports dev.reformator.loomoroutines.common;
 

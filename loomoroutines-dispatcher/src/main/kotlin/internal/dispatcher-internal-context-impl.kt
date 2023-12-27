@@ -26,7 +26,7 @@ class DispatcherContextImpl<T>: DispatcherContext<T>, Promise<T> {
         //In dispatcher coroutine
         if (isInDispatcher) {
             var result: PromiseResult<T>? = null
-            await(Callback{ awakener ->
+            await(Callback { awakener ->
                 subscribe {
                     result = it
                     awakener()

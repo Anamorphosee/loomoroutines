@@ -1,7 +1,7 @@
 package dev.reformator.loomoroutines.common.internal
 
-import org.apache.logging.log4j.LogManager
-import org.apache.logging.log4j.Logger
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import java.util.function.Consumer
 import java.util.function.Predicate as JavaPredicate
 import java.util.function.Supplier
@@ -9,12 +9,10 @@ import java.util.function.Supplier
 fun <T> List<T>.copyList(): List<T> =
     ArrayList(this)
 
-@Suppress("NOTHING_TO_INLINE")
-inline fun getLogger(): Logger = LogManager.getLogger()
-
-@Suppress("NOTHING_TO_INLINE")
-inline fun Logger.error(e: Throwable, message: Generator<String>) {
-    error(message, e)
+fun getLogger(): Logger {
+    val trace = Exception().stackTrace
+    val index = trace.indexOfFirst { !it.className.startsWith("java") } + 1
+    return LoggerFactory.getLogger(trace[index].className)
 }
 
 typealias Generator<T> = Supplier<out T>

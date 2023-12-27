@@ -10,8 +10,7 @@ repositories {
 
 dependencies {
     compileOnly("org.jetbrains.kotlin:kotlin-stdlib:${kotlin.coreLibrariesVersion}")
-
-    implementation("org.apache.logging.log4j:log4j-api:${properties["log4jVersion"]}")
+    implementation("org.slf4j:slf4j-api:${properties["slf4jVersion"]}")
 
     testImplementation("org.junit.jupiter:junit-jupiter:${properties["jupiterVersion"]}")
 }

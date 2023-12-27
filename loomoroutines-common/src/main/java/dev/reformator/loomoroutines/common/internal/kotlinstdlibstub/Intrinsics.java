@@ -27,20 +27,4 @@ public class Intrinsics {
     public static boolean areEqual(Object first, Object second) {
         return Objects.equals(first, second);
     }
-
-    public static <T> List<T> listOf(T element) {
-        return Collections.singletonList(element);
-    }
-
-    public static <T> List<T> emptyList() {
-        return Collections.emptyList();
-    }
-
-    public static int getLastIndex(List<?> list) {
-        return list.size() - 1;
-    }
-
-    public static <T> T removeLast(List<T> list) {
-        return list.remove(getLastIndex(list));
-    }
 }

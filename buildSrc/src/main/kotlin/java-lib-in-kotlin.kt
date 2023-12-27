@@ -45,7 +45,8 @@ fun getClassNode(file: File): ClassNode {
 
 private val typeReplacement = mapOf(
     "kotlin/jvm/internal/Intrinsics" to "dev/reformator/loomoroutines/common/internal/kotlinstdlibstub/Intrinsics",
-    "kotlin/collections/CollectionsKt" to "dev/reformator/loomoroutines/common/internal/kotlinstdlibstub/Intrinsics",
+    "kotlin/collections/CollectionsKt" to "dev/reformator/loomoroutines/common/internal/kotlinstdlibstub/CollectionsKt",
+    "kotlin/text/StringsKt" to "dev/reformator/loomoroutines/common/internal/kotlinstdlibstub/StringsKt",
 
     "kotlin/jvm/internal/Ref" to "dev/reformator/loomoroutines/common/internal/kotlinstdlibstub/Ref",
     "kotlin/jvm/internal/Ref\$ObjectRef" to "dev/reformator/loomoroutines/common/internal/kotlinstdlibstub/Ref\$ObjectRef",
