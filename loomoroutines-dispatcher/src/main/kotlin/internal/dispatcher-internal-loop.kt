@@ -25,17 +25,17 @@ private fun <T> Dispatcher.dispatchInCurrentThread(
     coroutine: SuspendedCoroutine<DispatcherContext<T>>,
     result: Ref.ObjectRef<T>
 ) {
-    val context = coroutine.coroutineContext
-    context.dispatcher = this
-    val nextPoint = try {
-        coroutine.resume()
-    } catch (e: Throwable) {
-        context.dispatcher = null
-        context.complete(ExceptionalPromiseResult(e))
-        return
-    }
-    context.dispatcher = null
     try {
+        val context = coroutine.coroutineContext
+        context.dispatcher = this
+        val nextPoint = try {
+            coroutine.resume()
+        } catch (e: Throwable) {
+            context.dispatcher = null
+            context.complete(ExceptionalPromiseResult(e))
+            return
+        }
+        context.dispatcher = null
         when (nextPoint) {
             is SuspendedCoroutine<DispatcherContext<T>> -> {
                 when (val event = context.lastEvent) {

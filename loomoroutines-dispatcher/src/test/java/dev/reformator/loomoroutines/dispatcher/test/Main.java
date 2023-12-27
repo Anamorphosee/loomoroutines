@@ -5,6 +5,7 @@ import dev.reformator.loomoroutines.dispatcher.DispatcherUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.Closeable;
 import java.time.Duration;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -57,32 +58,42 @@ public class Main {
     }
 
     private static void testJoin() {
-        var disp1 = createDispatcher();
-        var disp2 = createDispatcher();
+        try (var disp1 = createDispatcher(); var disp2 = createDispatcher()) {
+            var prom1 = DispatcherUtils.dispatch(disp1, () -> {
+                log.atInfo().log(() -> "started prom1 in " + Thread.currentThread());
+                DispatcherUtils.delay(Duration.ofSeconds(3));
+                log.atInfo().log(() -> "finished prom1 in " + Thread.currentThread());
+                return (Void) null;
+            });
 
-        var prom1 = DispatcherUtils.dispatch(disp1, () -> {
-            log.atInfo().log(() -> "started prom1 in " + Thread.currentThread());
-            DispatcherUtils.delay(Duration.ofSeconds(3));
-            log.atInfo().log(() -> "finished prom1 in " + Thread.currentThread());
-            return (Void) null;
-        });
+            var prom2 = DispatcherUtils.dispatch(disp2, () -> {
+                log.atInfo().log(() -> "started prom2 in " + Thread.currentThread());
+                var joined = prom1.join();
+                log.atInfo().log(() -> "prom1 joined with " + joined);
+                return "finished";
+            }).join();
 
-        var prom2 = DispatcherUtils.dispatch(disp2, () -> {
-            log.atInfo().log(() -> "started prom2 in " + Thread.currentThread());
-            var joined = prom1.join();
-            log.atInfo().log(() -> "prom1 joined with " + joined);
-            return "finished";
-        }).join();
+            log.atInfo().log(() -> "finished in " + Thread.currentThread());
+
+            prom1.join();
+        }
     }
 
-    private static Dispatcher createDispatcher() {
-        return new Dispatcher() {
-            private final ScheduledExecutorService service = Executors.newScheduledThreadPool(1);
+    private static class SimpleDispatcher implements Dispatcher, AutoCloseable {
+        private final ScheduledExecutorService service = Executors.newScheduledThreadPool(1);
 
-            @Override
-            public void scheduleExecute(Duration delay, Runnable action) {
-                service.schedule(action, delay.toMillis(), TimeUnit.MILLISECONDS);
-            }
-        };
+        @Override
+        public void scheduleExecute(Duration delay, Runnable action) {
+            service.schedule(action, delay.toMillis(), TimeUnit.MILLISECONDS);
+        }
+
+        @Override
+        public void close() {
+            service.close();
+        }
+    }
+
+    private static SimpleDispatcher createDispatcher() {
+        return new SimpleDispatcher();
     }
 }

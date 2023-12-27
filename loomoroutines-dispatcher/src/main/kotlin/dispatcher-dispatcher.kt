@@ -41,8 +41,8 @@ class SucceedPromiseResult<out T>(private val result: T): PromiseResult<T> {
         get() = true
 }
 
-class ExceptionalPromiseResult<out T>(private val exception: Throwable): PromiseResult<T> {
-    override fun get(): T {
+class ExceptionalPromiseResult(val exception: Throwable): PromiseResult<Nothing> {
+    override fun get(): Nothing {
         throw exception
     }
 
