@@ -46,7 +46,7 @@ private fun <T> Dispatcher.dispatchInCurrentThread(
                             if (awakened.compareAndSet(false, true)) {
                                 dispatch(nextPoint, result)
                             } else {
-                                error("")
+                                error("Awakener is already called.")
                             }
                         })
                     }
