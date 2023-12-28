@@ -10,6 +10,7 @@ import dev.reformator.loomoroutines.common.internal.kotlinstdlibstub.Ref
 import dev.reformator.loomoroutines.dispatcher.Dispatcher
 import dev.reformator.loomoroutines.dispatcher.ExceptionalPromiseResult
 import dev.reformator.loomoroutines.dispatcher.SucceedPromiseResult
+import java.util.concurrent.atomic.AtomicBoolean
 
 private val log = getLogger()
 
@@ -39,9 +40,16 @@ private fun <T> Dispatcher.dispatchInCurrentThread(
         when (nextPoint) {
             is SuspendedCoroutine<DispatcherContext<T>> -> {
                 when (val event = context.lastEvent) {
-                    is AwaitDispatcherEvent -> event.callback(Action {
-                        execute { dispatchInCurrentThread(nextPoint, result) }
-                    })
+                    is AwaitDispatcherEvent -> {
+                        val awakened = AtomicBoolean(false)
+                        event.callback(Action {
+                            if (awakened.compareAndSet(false, true)) {
+                                dispatch(nextPoint, result)
+                            } else {
+                                error("")
+                            }
+                        })
+                    }
 
                     is DelayDispatcherEvent -> scheduleExecute(event.duration) {
                         dispatchInCurrentThread(nextPoint, result)
