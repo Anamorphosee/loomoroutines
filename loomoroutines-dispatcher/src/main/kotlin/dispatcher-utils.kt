@@ -12,8 +12,10 @@ import dev.reformator.loomoroutines.common.internal.invoke
 import dev.reformator.loomoroutines.common.internal.kotlinstdlibstub.Ref
 import dev.reformator.loomoroutines.dispatcher.internal.DispatcherContext
 import dev.reformator.loomoroutines.dispatcher.internal.DispatcherContextImpl
+import dev.reformator.loomoroutines.dispatcher.internal.ScheduledExecutorServiceDispatcher
 import dev.reformator.loomoroutines.dispatcher.internal.dispatch
 import java.time.Duration
+import java.util.concurrent.ScheduledExecutorService
 
 @Target(AnnotationTarget.FUNCTION)
 annotation class CallOnlyInDispatcher
@@ -59,6 +61,9 @@ fun <T> Dispatcher.dispatch(body: Generator<T>): Promise<T> {
     dispatch(coroutine, result)
     return context.promise
 }
+
+fun ScheduledExecutorService.toDispatcher(): CloseableDispatcher =
+    ScheduledExecutorServiceDispatcher(this)
 
 private fun getMandatoryRunningDispatcherCoroutine(): RunningCoroutine<DispatcherContext<*>> =
     getRunningCoroutineByContextType(DispatcherContext::class.java) ?: error("Method must be called in a dispatcher coroutine.")

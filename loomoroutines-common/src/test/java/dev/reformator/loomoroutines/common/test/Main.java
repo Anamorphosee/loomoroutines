@@ -32,7 +32,7 @@ public class Main {
     }
 
     private static void checkGenerator() {
-        var stream = GeneratorUtils.stream((scope) -> {
+        var stream = GeneratorUtils.loomStream((scope) -> {
             var prev = BigInteger.ZERO;
             var current = BigInteger.ONE;
             while (true) {

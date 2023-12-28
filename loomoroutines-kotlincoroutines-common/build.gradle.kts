@@ -10,6 +10,7 @@ repositories {
 
 dependencies {
     implementation(project(":loomoroutines-common"))
+    implementation("org.slf4j:slf4j-api:${properties["slf4jVersion"]}")
 
     testRuntimeOnly("ch.qos.logback:logback-classic:${properties["logbackVersion"]}")
     testImplementation("org.junit.jupiter:junit-jupiter:${properties["jupiterVersion"]}")

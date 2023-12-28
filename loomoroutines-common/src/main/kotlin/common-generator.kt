@@ -12,11 +12,11 @@ interface GeneratorScope<in T> {
     fun emit(value: T)
 }
 
-fun <T> iterator(generator: Callback<GeneratorScope<T>>): Iterator<T> =
+fun <T> loomIterator(generator: Callback<GeneratorScope<T>>): Iterator<T> =
     GeneratorIterator(generator)
 
-fun <T> iterable(generator: Callback<GeneratorScope<T>>): Iterable<T> =
-    Iterable { iterator(generator) }
+fun <T> loomIterable(generator: Callback<GeneratorScope<T>>): Iterable<T> =
+    Iterable { loomIterator(generator) }
 
-fun <T> stream(generator: Callback<GeneratorScope<T>>): Stream<out T> =
-    StreamSupport.stream(Spliterators.spliteratorUnknownSize(iterator(generator), Spliterator.ORDERED), false)
+fun <T> loomStream(generator: Callback<GeneratorScope<T>>): Stream<out T> =
+    StreamSupport.stream(Spliterators.spliteratorUnknownSize(loomIterator(generator), Spliterator.ORDERED), false)

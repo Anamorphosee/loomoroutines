@@ -50,7 +50,6 @@ private fun <T> Dispatcher.dispatchInCurrentThread(
                     is SwitchDispatcherEvent -> event.newDispatcher.dispatch(nextPoint, result)
                 }
             }
-
             is CompletedCoroutine<DispatcherContext<T>> -> context.complete(SucceedPromiseResult(result.element))
         }
     } catch (e: Throwable) {

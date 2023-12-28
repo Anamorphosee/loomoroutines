@@ -17,14 +17,14 @@ inline fun <reified T> getRunningCoroutineByContextPredicate(crossinline predica
 inline fun <reified T> getRunningCoroutineByContextType(): RunningCoroutine<T>? =
     getRunningCoroutineByContextPredicate { _: T -> true }
 
-inline fun <T> iterator(crossinline generator: GeneratorScope<T>.() -> Unit): Iterator<T> =
-    iterator(Callback { it.generator() })
+inline fun <T> loomIterator(crossinline generator: GeneratorScope<T>.() -> Unit): Iterator<T> =
+    loomIterator(Callback { it.generator() })
 
-inline fun <T> iterable(crossinline generator: GeneratorScope<T>.() -> Unit): Iterable<T> =
-    iterable(Callback { it.generator() })
+inline fun <T> loomIterable(crossinline generator: GeneratorScope<T>.() -> Unit): Iterable<T> =
+    loomIterable(Callback { it.generator() })
 
-inline fun <T> stream(crossinline generator: GeneratorScope<T>.() -> Unit): Stream<out T> =
-    stream(Callback { it.generator() })
+inline fun <T> loomStream(crossinline generator: GeneratorScope<T>.() -> Unit): Stream<out T> =
+    loomStream(Callback { it.generator() })
 
-inline fun <T> sequence(crossinline generator: GeneratorScope<T>.() -> Unit): Sequence<T> =
-    Sequence { iterator(generator) }
+inline fun <T> loomSequence(crossinline generator: GeneratorScope<T>.() -> Unit): Sequence<T> =
+    Sequence { loomIterator(generator) }

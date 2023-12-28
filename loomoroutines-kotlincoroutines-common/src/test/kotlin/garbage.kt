@@ -1,18 +1,34 @@
 package dev.reformator.loomoroutines.kotlincoroutines.common.test
 
-import dev.reformator.loomoroutines.common.SuspendedCoroutine
-import dev.reformator.loomoroutines.common.createCoroutine
-import dev.reformator.loomoroutines.common.runningCoroutines
-import dev.reformator.loomoroutines.common.toSuspended
+import dev.reformator.loomoroutines.common.*
+import dev.reformator.loomoroutines.common.internal.getLogger
+import dev.reformator.loomoroutines.common.internal.info
+import java.math.BigInteger
 import java.util.concurrent.atomic.AtomicReference
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.thread
 import kotlin.concurrent.withLock
-import kotlin.coroutines.Continuation
-import kotlin.coroutines.intrinsics.COROUTINE_SUSPENDED
-import kotlin.coroutines.resume
+
+private val log = getLogger()
 
 fun main() {
+    testGenerator()
+}
+
+private fun testGenerator() {
+    loomSequence {
+        var prev = BigInteger.ZERO
+        var current = BigInteger.ONE
+        while (true) {
+            emit(current)
+            val tmp = prev + current
+            prev = current
+            current = tmp
+        }
+    }.take(20).forEach { log.info(it::toString) }
+}
+
+private fun testLockingMonitor() {
     val mon = ReentrantLock()
     val cor = AtomicReference<SuspendedCoroutine<*>?>(null)
     thread {
@@ -39,29 +55,5 @@ fun main() {
         }
         cor.resume()
     }
-//    runBlocking {
-//        println(suspendCoroutineUninterceptedOrReturn { cont ->
-//            printCoroutine(cont)
-//        }.length)
-//        suspendCoroutine { cont ->
-//            println(cont)
-//            cont.resume("h")
-//        }
-//        delay(100)
-//        async {
-//
-//        }.invokeOnCompletion {  }
-//        flow {
-//           emit(100)
-//        }
-//    }
 }
 
-fun printCoroutine(continuation: Continuation<String>): Any {
-    println(continuation)
-    thread {
-        Thread.sleep(100)
-        continuation.resume("foo")
-    }
-    return COROUTINE_SUSPENDED
-}

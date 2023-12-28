@@ -1,8 +1,8 @@
 package test;
 
-import dev.reformator.loomoroutines.dispatcher.Dispatcher;
 import dev.reformator.loomoroutines.dispatcher.DispatcherUtils;
-import dev.reformator.loomoroutines.dispatcher.test.swing.SwingDispatcher;
+import dev.reformator.loomoroutines.dispatcher.SwingDispatcher;
+import dev.reformator.loomoroutines.dispatcher.VirtualThreadsDispatcher;
 
 import javax.swing.*;
 import java.io.IOException;
@@ -15,14 +15,12 @@ public class Main {
         mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         mainFrame.setSize(500, 500);
         var button = new JButton("Test");
-        button.addActionListener(event -> DispatcherUtils.dispatch(SwingDispatcher.instance, () -> {
+        button.addActionListener(event -> DispatcherUtils.dispatch(SwingDispatcher.INSTANCE, () -> {
             button.setText("CLICKED!");
-            button.setText(DispatcherUtils.doIn(Dispatcher.virtualThreads, () -> {
+            button.setText(DispatcherUtils.doIn(VirtualThreadsDispatcher.INSTANCE, () -> {
                 String str;
-                try {
-                    var bytes = new URL("https://raw.githubusercontent.com/Anamorphosee/stacktrace-decoroutinator/master/README.md")
-                            .openStream()
-                            .readAllBytes();
+                try (var stream = new URL("https://raw.githubusercontent.com/Anamorphosee/stacktrace-decoroutinator/master/README.md").openStream()) {
+                    var bytes = stream.readAllBytes();
                     str = new String(bytes);
                 } catch (IOException e) {
                     throw new RuntimeException(e);
