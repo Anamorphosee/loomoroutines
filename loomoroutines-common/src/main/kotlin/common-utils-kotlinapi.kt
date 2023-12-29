@@ -37,7 +37,7 @@ inline fun <T> loomIterable(crossinline generator: GeneratorScope<T>.() -> Unit)
 
 @JvmSynthetic
 inline fun <T> loomStream(crossinline generator: GeneratorScope<T>.() -> Unit): Stream<out T> =
-    loomStream(Consumer<GeneratorScope<T>> { it.generator() })
+    loomStream(Consumer { it.generator() })
 
 @JvmSynthetic
 inline fun <T> loomSequence(crossinline generator: GeneratorScope<T>.() -> Unit): Sequence<T> =

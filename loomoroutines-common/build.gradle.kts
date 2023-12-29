@@ -2,6 +2,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     id("dev.reformator.javalibinkotlin")
+    id("dev.reformator.removejigsawdummy")
 }
 
 repositories {

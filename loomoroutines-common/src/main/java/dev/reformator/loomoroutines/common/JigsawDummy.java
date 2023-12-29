@@ -1,3 +1,3 @@
 package dev.reformator.loomoroutines.common;
 
-class Dummy { }
+class JigsawDummy { }

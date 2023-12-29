@@ -1,4 +1,4 @@
-package dev.reformator.javalibinkotlin
+package dev.reformator.gradle.javalibinkotlin
 
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -102,8 +102,6 @@ private val typeReplacement = mapOf(
 private val interfaceImplementationsToRemove = listOf(
     "kotlin/jvm/internal/markers/KMappedMarker"
 )
-
-private val kotlinApiAnnotationDesc = "Ldev/reformator/loomoroutines/common/internal/KotlinApi;"
 
 private fun ClassNode.transform(): Boolean {
     var doTransform = false
