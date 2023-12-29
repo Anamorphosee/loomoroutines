@@ -1,6 +1,5 @@
 package test;
 
-import dev.reformator.loomoroutines.dispatcher.CallOnlyInDispatcher;
 import dev.reformator.loomoroutines.dispatcher.DispatcherUtils;
 import dev.reformator.loomoroutines.dispatcher.SwingDispatcher;
 import dev.reformator.loomoroutines.dispatcher.VirtualThreadsDispatcher;

@@ -6,7 +6,7 @@ import java.util.function.Predicate as JavaPredicate
 import java.util.function.Supplier as JavaSupplier
 import java.util.function.Consumer as JavaConsumer
 
-fun <T> List<T>.copyList(): MutableList<T> =
+fun <T> Collection<T>.copyList(): MutableList<T> =
     ArrayList(this)
 
 fun getLogger(): Logger {
@@ -23,23 +23,19 @@ typealias Predicate<T> = JavaPredicate<in T>
 
 val alwaysTruePredicate = Predicate<Any?> { true }
 
-@JvmSynthetic
 @Suppress("NOTHING_TO_INLINE")
 inline operator fun <T> Supplier<T>.invoke(): T =
     get()
 
-@JvmSynthetic
 @Suppress("NOTHING_TO_INLINE")
 inline operator fun <T> Consumer<T>.invoke(value: T) {
     accept(value)
 }
 
-@JvmSynthetic
 @Suppress("NOTHING_TO_INLINE")
 inline operator fun <T> Predicate<T>.invoke(value: T): Boolean =
     test(value)
 
-@JvmSynthetic
 @Suppress("NOTHING_TO_INLINE")
 inline operator fun Runnable.invoke() {
     run()

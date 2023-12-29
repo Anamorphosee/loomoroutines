@@ -13,6 +13,7 @@ private val log = getLogger()
 
 fun main() {
     testGenerator()
+    testLockingMonitor()
 }
 
 private fun testGenerator() {
@@ -34,9 +35,9 @@ private fun testLockingMonitor() {
     thread {
         createCoroutine(Unit) {
             mon.withLock {
-                println("thread 1 lock: ${mon.isHeldByCurrentThread}")
-                runningCoroutines.last().suspend()
-                println("thread 2 lock: ${mon.isHeldByCurrentThread}")
+                log.info { "thread 1 lock: ${mon.isHeldByCurrentThread}" }
+                suspendCoroutine<Any?> { true }
+                log.info { "thread 2 lock: ${mon.isHeldByCurrentThread}" }
             }
         }.also {
             cor.set(it.resume().toSuspended()!!)
