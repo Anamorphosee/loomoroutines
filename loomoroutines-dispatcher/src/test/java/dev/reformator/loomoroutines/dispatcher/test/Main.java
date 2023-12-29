@@ -30,14 +30,14 @@ public class Main {
                     return null;
                 });
                 log.atInfo().log(() -> "call 5 isInDispatcher: " + DispatcherUtils.isInDispatcher());
-                DispatcherUtils.await(awakener -> {
+                DispatcherUtils.await(notifier -> {
                     log.atInfo().log(() -> "call 6 isInDispatcher: " + DispatcherUtils.isInDispatcher());
                     try {
                         Thread.sleep(500);
                     } catch (InterruptedException e) {
                         throw new RuntimeException(e);
                     }
-                    awakener.run();
+                    notifier.invoke();
                 });
                 log.atInfo().log(() -> "call 7 isInDispatcher: " + DispatcherUtils.isInDispatcher());
                 return null;

@@ -1,8 +1,5 @@
 package dev.reformator.loomoroutines.common.internal.kotlinstdlibstub;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
 import java.util.Objects;
 
 public class Intrinsics {
@@ -22,6 +19,10 @@ public class Intrinsics {
 
     public static void checkNotNull(Object object) {
         Objects.requireNonNull(object);
+    }
+
+    public static void checkNotNull(Object object, String message) {
+        Objects.requireNonNull(object, message);
     }
 
     public static boolean areEqual(Object first, Object second) {

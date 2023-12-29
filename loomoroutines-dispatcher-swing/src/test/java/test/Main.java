@@ -1,5 +1,6 @@
 package test;
 
+import dev.reformator.loomoroutines.dispatcher.CallOnlyInDispatcher;
 import dev.reformator.loomoroutines.dispatcher.DispatcherUtils;
 import dev.reformator.loomoroutines.dispatcher.SwingDispatcher;
 import dev.reformator.loomoroutines.dispatcher.VirtualThreadsDispatcher;
@@ -17,16 +18,7 @@ public class Main {
         var button = new JButton("Test");
         button.addActionListener(event -> DispatcherUtils.dispatch(SwingDispatcher.INSTANCE, () -> {
             button.setText("CLICKED!");
-            button.setText(DispatcherUtils.doIn(VirtualThreadsDispatcher.INSTANCE, () -> {
-                String str;
-                try (var stream = new URL("https://raw.githubusercontent.com/Anamorphosee/stacktrace-decoroutinator/master/README.md").openStream()) {
-                    var bytes = stream.readAllBytes();
-                    str = new String(bytes);
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-                return str;
-            }));
+            button.setText(DispatcherUtils.doIn(VirtualThreadsDispatcher.INSTANCE, Main::loadText));
             DispatcherUtils.delay(Duration.ofSeconds(3));
             mainFrame.setTitle("3 SECONDS PAST!");
             DispatcherUtils.delay(Duration.ofSeconds(3));
@@ -36,5 +28,14 @@ public class Main {
         }));
         mainFrame.add(button);
         mainFrame.setVisible(true);
+    }
+
+    private static String loadText() {
+        try (var stream = new URL("https://raw.githubusercontent.com/Anamorphosee/stacktrace-decoroutinator/master/README.md").openStream()) {
+            var bytes = stream.readAllBytes();
+            return new String(bytes);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

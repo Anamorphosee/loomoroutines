@@ -2,11 +2,11 @@ package dev.reformator.loomoroutines.common.internal
 
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.util.function.Consumer
 import java.util.function.Predicate as JavaPredicate
-import java.util.function.Supplier
+import java.util.function.Supplier as JavaSupplier
+import java.util.function.Consumer as JavaConsumer
 
-fun <T> List<T>.copyList(): List<T> =
+fun <T> List<T>.copyList(): MutableList<T> =
     ArrayList(this)
 
 fun getLogger(): Logger {
@@ -15,28 +15,22 @@ fun getLogger(): Logger {
     return LoggerFactory.getLogger(trace[index].className)
 }
 
-typealias Generator<T> = Supplier<out T>
+typealias Supplier<T> = JavaSupplier<out T>
 
-typealias Action = Runnable
-
-typealias Callback<T> = Consumer<in T>
+typealias Consumer<T> = JavaConsumer<in T>
 
 typealias Predicate<T> = JavaPredicate<in T>
 
+val alwaysTruePredicate = Predicate<Any?> { true }
+
 @JvmSynthetic
 @Suppress("NOTHING_TO_INLINE")
-inline operator fun <T> Generator<T>.invoke(): T =
+inline operator fun <T> Supplier<T>.invoke(): T =
     get()
 
 @JvmSynthetic
 @Suppress("NOTHING_TO_INLINE")
-inline operator fun Action.invoke() {
-    run()
-}
-
-@JvmSynthetic
-@Suppress("NOTHING_TO_INLINE")
-inline operator fun <T> Callback<T>.invoke(value: T) {
+inline operator fun <T> Consumer<T>.invoke(value: T) {
     accept(value)
 }
 
@@ -44,3 +38,9 @@ inline operator fun <T> Callback<T>.invoke(value: T) {
 @Suppress("NOTHING_TO_INLINE")
 inline operator fun <T> Predicate<T>.invoke(value: T): Boolean =
     test(value)
+
+@JvmSynthetic
+@Suppress("NOTHING_TO_INLINE")
+inline operator fun Runnable.invoke() {
+    run()
+}

@@ -2,33 +2,38 @@ package dev.reformator.loomoroutines.common.test;
 
 import dev.reformator.loomoroutines.common.CoroutineUtils;
 import dev.reformator.loomoroutines.common.GeneratorUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.math.BigInteger;
+import java.util.Objects;
 
 public class Main {
+    private static final Logger log = LoggerFactory.getLogger(Main.class);
+
     public static void main(String[] args) {
         checkGenerator();
         checkInnerScope();
     }
 
     private static void checkInnerScope() {
-        System.out.println("call0: " + CoroutineUtils.getRunningCoroutines());
+        log.atInfo().log(() -> "call0: " + CoroutineUtils.getRunningCoroutineContexts());
         var point1 = CoroutineUtils.createCoroutine("context1", () -> {
-            System.out.println("call1: " + CoroutineUtils.getRunningCoroutines());
+            log.atInfo().log(() -> "call1: " + CoroutineUtils.getRunningCoroutineContexts());
             var point2 = CoroutineUtils.toSuspended(CoroutineUtils.createCoroutine("context2", () -> {
-                System.out.println("call2: " + CoroutineUtils.getRunningCoroutines());
-                CoroutineUtils.getRunningCoroutines().get(0).suspend();
-                System.out.println("call3: " + CoroutineUtils.getRunningCoroutines());
-                CoroutineUtils.getRunningCoroutines().get(1).suspend();
-                System.out.println("call4: " + CoroutineUtils.getRunningCoroutines());
+                log.atInfo().log(() -> "call2: " + CoroutineUtils.getRunningCoroutineContexts());
+                CoroutineUtils.suspendCoroutine(context -> Objects.equals(context, "context1"));
+                log.atInfo().log(() -> "call3: " + CoroutineUtils.getRunningCoroutineContexts());
+                CoroutineUtils.suspendCoroutine(context -> Objects.equals(context, "context2"));
+                log.atInfo().log(() -> "call4: " + CoroutineUtils.getRunningCoroutineContexts());
             })).resume();
-            System.out.println("call5: " + CoroutineUtils.getRunningCoroutines());
+            log.atInfo().log(() -> "call5: " + CoroutineUtils.getRunningCoroutineContexts());
             CoroutineUtils.toSuspended(point2).resume();
-            System.out.println("call6: " + CoroutineUtils.getRunningCoroutines());
+            log.atInfo().log(() -> "call6: " + CoroutineUtils.getRunningCoroutineContexts());
         }).resume();
-        System.out.println("call7: " + CoroutineUtils.getRunningCoroutines());
+        log.atInfo().log(() -> "call7: " + CoroutineUtils.getRunningCoroutineContexts());
         CoroutineUtils.toSuspended(point1).resume();
-        System.out.println("call8: " + CoroutineUtils.getRunningCoroutines());
+        log.atInfo().log(() -> "call8: " + CoroutineUtils.getRunningCoroutineContexts());
     }
 
     private static void checkGenerator() {
@@ -42,6 +47,6 @@ public class Main {
                 current = tmp;
             }
         });
-        stream.limit(150).forEach(System.out::println);
+        stream.limit(150).forEach(it -> log.atInfo().log(() -> "generator value: " + it));
     }
 }

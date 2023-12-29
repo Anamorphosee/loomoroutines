@@ -2,14 +2,13 @@
 
 package dev.reformator.loomoroutines.dispatcher
 
-import dev.reformator.loomoroutines.common.RunningCoroutine
 import dev.reformator.loomoroutines.common.createCoroutine
-import dev.reformator.loomoroutines.common.getRunningCoroutineByContextType
-import dev.reformator.loomoroutines.common.internal.Action
-import dev.reformator.loomoroutines.common.internal.Callback
-import dev.reformator.loomoroutines.common.internal.Generator
+import dev.reformator.loomoroutines.common.getRunningCoroutineContext
+import dev.reformator.loomoroutines.common.internal.Consumer
+import dev.reformator.loomoroutines.common.internal.Supplier
 import dev.reformator.loomoroutines.common.internal.invoke
 import dev.reformator.loomoroutines.common.internal.kotlinstdlibstub.Ref
+import dev.reformator.loomoroutines.common.trySuspendCoroutine
 import dev.reformator.loomoroutines.dispatcher.internal.DispatcherContext
 import dev.reformator.loomoroutines.dispatcher.internal.DispatcherContextImpl
 import dev.reformator.loomoroutines.dispatcher.internal.ScheduledExecutorServiceDispatcher
@@ -21,43 +20,48 @@ import java.util.concurrent.ScheduledExecutorService
 annotation class CallOnlyInDispatcher
 
 val isInDispatcher: Boolean
-    get() = getRunningCoroutineByContextType(DispatcherContext::class.java) != null
+    get() = getRunningCoroutineContext<DispatcherContext<*>>() != null
+
+fun interface Notifier {
+    operator fun invoke()
+}
 
 @CallOnlyInDispatcher
-fun await(callback: Callback<Action>) {
-    val coroutine = getMandatoryRunningDispatcherCoroutine()
-    coroutine.coroutineContext.setAwaitLastEvent(callback)
-    coroutine.suspend()
+fun await(callback: Consumer<Notifier>) {
+    sendDispatcherEvent {
+        setAwaitLastEvent(callback)
+    }
 }
 
 @CallOnlyInDispatcher
 fun delay(duration: Duration) {
-    val coroutine = getMandatoryRunningDispatcherCoroutine()
-    coroutine.coroutineContext.setDelayLastEvent(duration)
-    coroutine.suspend()
+    sendDispatcherEvent {
+        setDelayLastEvent(duration)
+    }
 }
 
 @CallOnlyInDispatcher
-fun <T> doIn(dispatcher: Dispatcher, generator: Generator<T>): T {
-    var coroutine = getMandatoryRunningDispatcherCoroutine()
-    val oldDispatcher = coroutine.coroutineContext.dispatcher!!
+fun <T> doIn(dispatcher: Dispatcher, action: Supplier<T>): T {
+    val context = getMandatoryRunningCoroutineDispatcherContext()
+    val oldDispatcher = context.dispatcher!!
     if (oldDispatcher === dispatcher) {
-        return generator()
+        return action()
     } else {
-        coroutine.coroutineContext.setSwitchLastEvent(dispatcher)
-        coroutine.suspend()
-        val result = generator()
-        coroutine = getMandatoryRunningDispatcherCoroutine()
-        coroutine.coroutineContext.setSwitchLastEvent(oldDispatcher)
-        coroutine.suspend()
+        sendDispatcherEvent {
+            setSwitchLastEvent(dispatcher)
+        }
+        val result = action()
+        sendDispatcherEvent {
+            setSwitchLastEvent(oldDispatcher)
+        }
         return result
     }
 }
 
-fun <T> Dispatcher.dispatch(body: Generator<T>): Promise<T> {
+fun <T> Dispatcher.dispatch(body: Supplier<T>): Promise<T> {
     val context = DispatcherContextImpl<T>()
     val result = Ref.ObjectRef<T>()
-    val coroutine = createCoroutine(context, Action { result.element = body() })
+    val coroutine = createCoroutine(context) { result.element = body() }
     dispatch(coroutine, result)
     return context.promise
 }
@@ -65,5 +69,21 @@ fun <T> Dispatcher.dispatch(body: Generator<T>): Promise<T> {
 fun ScheduledExecutorService.toDispatcher(): CloseableDispatcher =
     ScheduledExecutorServiceDispatcher(this)
 
-private fun getMandatoryRunningDispatcherCoroutine(): RunningCoroutine<DispatcherContext<*>> =
-    getRunningCoroutineByContextType(DispatcherContext::class.java) ?: error("Method must be called in a dispatcher coroutine.")
+@CallOnlyInDispatcher
+private inline fun sendDispatcherEvent(crossinline generateEvent: DispatcherContext<*>.() -> Unit) {
+    val suspended = trySuspendCoroutine<DispatcherContext<*>> {
+        it.generateEvent()
+        true
+    }
+    if (!suspended) {
+        throwNotInDispatcher()
+    }
+}
+
+@CallOnlyInDispatcher
+private fun getMandatoryRunningCoroutineDispatcherContext(): DispatcherContext<*> =
+    getRunningCoroutineContext<DispatcherContext<*>>() ?: throwNotInDispatcher()
+
+@CallOnlyInDispatcher
+private fun throwNotInDispatcher(): Nothing =
+    error("Method must be called in a dispatcher coroutine.")

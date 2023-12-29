@@ -12,6 +12,7 @@ dependencies {
     compileOnly("org.jetbrains.kotlin:kotlin-stdlib:${kotlin.coreLibrariesVersion}")
     implementation("org.slf4j:slf4j-api:${properties["slf4jVersion"]}")
 
+    testRuntimeOnly("ch.qos.logback:logback-classic:${properties["logbackVersion"]}")
     testImplementation("org.junit.jupiter:junit-jupiter:${properties["jupiterVersion"]}")
 }
 

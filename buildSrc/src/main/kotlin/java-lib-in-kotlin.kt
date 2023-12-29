@@ -2,10 +2,10 @@ package dev.reformator.javalibinkotlin
 
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.file.Directory
 import org.jetbrains.kotlin.gradle.plugin.extraProperties
 import org.objectweb.asm.*
 import org.objectweb.asm.tree.*
-import java.io.File
 
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
@@ -20,27 +20,64 @@ class JavalibInKotlinPlugin: Plugin<Project> {
                     .dir("classes")
                     .dir("kotlin")
                     .dir("main")
-                    .asFileTree.visit {
-                        if (!isDirectory) {
-                            val file = file
-                            if (file.name.endsWith(".class")) {
-                                val classNode = getClassNode(file)
-                                if (transformClass(classNode)) {
-                                    rewriteClassNode(file, classNode)
-                                }
-                            }
-                        }
-                    }
+                    .transform()
             }
         }
     }
 }
 
-fun getClassNode(file: File): ClassNode {
-    val classReader = ClassReader(file.inputStream())
-    val classNode = ClassNode(Opcodes.ASM9)
-    classReader.accept(classNode, 0)
-    return classNode
+private fun Directory.transform() {
+    val aggregatedInfo = getAggregatedInfo()
+    visitClasses {
+        isTransformationNeeded(aggregatedInfo) && transform()
+    }
+}
+
+private data class AggregatedInfo(val classToOuterClass: Map<String, String>, val classToSourceFile: Map<String, String>)
+
+private fun Directory.getAggregatedInfo(): AggregatedInfo {
+    val classToOuterClass = mutableMapOf<String, String>()
+    val classToSourceFile = mutableMapOf<String, String>()
+    visitClasses {
+        outerClass.let {
+            if (it != null) {
+                classToOuterClass[name] = it
+            }
+        }
+        sourceFile.let {
+            if (it != null) {
+                classToSourceFile[name] = it
+            }
+        }
+        false
+    }
+    return AggregatedInfo(
+        classToOuterClass = classToOuterClass,
+        classToSourceFile = classToSourceFile
+    )
+}
+
+private fun ClassNode.isTransformationNeeded(aggregatedInfo: AggregatedInfo): Boolean {
+    val outerClassName = generateSequence(name) { aggregatedInfo.classToOuterClass[it] }.last()
+    return !aggregatedInfo.classToSourceFile[outerClassName].orEmpty().endsWith("-kotlinapi.kt")
+}
+
+private fun Directory.visitClasses(doRewrite: ClassNode.() -> Boolean) {
+    asFileTree.visit {
+        if (!isDirectory && name.endsWith(".class")) {
+            val classNode = open().use {
+                val classReader = ClassReader(it)
+                val classNode = ClassNode(Opcodes.ASM9)
+                classReader.accept(classNode, 0)
+                classNode
+            }
+            if (doRewrite(classNode)) {
+                val classWriter = ClassWriter(0)
+                classNode.accept(classWriter)
+                file.writeBytes(classWriter.toByteArray())
+            }
+        }
+    }
 }
 
 private val typeReplacement = mapOf(
@@ -52,6 +89,7 @@ private val typeReplacement = mapOf(
     "kotlin/jvm/internal/Ref\$ObjectRef" to "dev/reformator/loomoroutines/common/internal/kotlinstdlibstub/Ref\$ObjectRef",
 
     "kotlin/NoWhenBranchMatchedException" to "dev/reformator/loomoroutines/common/internal/kotlinstdlibstub/KotlinException",
+    "kotlin/KotlinNothingValueException" to "dev/reformator/loomoroutines/common/internal/kotlinstdlibstub/KotlinException",
 
     "kotlin/Unit" to "dev/reformator/loomoroutines/common/internal/kotlinstdlibstub/Unit",
     "kotlin/Function" to "dev/reformator/loomoroutines/common/internal/kotlinstdlibstub/Function",
@@ -67,137 +105,95 @@ private val interfaceImplementationsToRemove = listOf(
 
 private val kotlinApiAnnotationDesc = "Ldev/reformator/loomoroutines/common/internal/KotlinApi;"
 
-private fun transformClass(node: ClassNode): Boolean {
-    if (node.sourceFile.orEmpty().endsWith("-kotlinapi.kt")) {
-        return false
-    }
+private fun ClassNode.transform(): Boolean {
     var doTransform = false
-    if (transformField(node.superName) { node.superName = it }) {
-        doTransform = true
-    }
-    node.interfaces?.let { interfaces ->
+    val needTranformationNotifier = { doTransform = true }
+    transformField(superName, needTranformationNotifier) { superName = it }
+    interfaces?.let { interfaces ->
         for (i in interfaces.indices) {
-            if (transformField(interfaces[i]) { interfaces[i] = it }) {
-                doTransform = true
-            }
+            transformField(interfaces[i], needTranformationNotifier) { interfaces[i] = it }
         }
     }
-    node.fields?.forEach { field ->
-        if (transformField(field.desc) { field.desc = it }) {
-            doTransform = true
-        }
-        if (transformField(field.signature) { field.signature = it }) {
-            doTransform = true
-        }
+    fields?.forEach { field ->
+        transformField(field.desc, needTranformationNotifier) { field.desc = it }
+        transformField(field.signature, needTranformationNotifier) { field.signature = it }
     }
-    node.innerClasses?.forEach { innerClass ->
-        if (transformField(innerClass.name) { innerClass.name = it }) {
-            doTransform = true
-        }
-        if (transformField(innerClass.outerName) { innerClass.outerName = it }) {
-            doTransform = true
-        }
+    innerClasses?.forEach { innerClass ->
+        transformField(innerClass.name, needTranformationNotifier) { innerClass.name = it }
+        transformField(innerClass.outerName, needTranformationNotifier) { innerClass.outerName = it }
     }
-    node.methods?.forEach { method ->
+    methods?.forEach { method ->
         method.instructions?.let { instructions ->
             instructions.forEach { instruction ->
                 if (instruction is MethodInsnNode) {
-                    if (transformField(instruction.owner) { instruction.owner = it }) {
-                        doTransform = true
-                    }
-                    if (transformField(instruction.desc) { instruction.desc = it }) {
-                        doTransform = true
-                    }
+                    transformField(instruction.owner, needTranformationNotifier) { instruction.owner = it }
+                    transformField(instruction.desc, needTranformationNotifier) { instruction.desc = it }
                 } else if (instruction is TypeInsnNode) {
-                    if (transformField(instruction.desc) { instruction.desc = it }) {
-                        doTransform = true
-                    }
+                    transformField(instruction.desc, needTranformationNotifier) { instruction.desc = it }
                 } else if (instruction is FieldInsnNode) {
-                    if (transformField(instruction.owner) { instruction.owner = it}) {
-                        doTransform = true
-                    }
-                    if (transformField(instruction.desc) { instruction.desc = it }) {
-                        doTransform = true
-                    }
+                    transformField(instruction.owner, needTranformationNotifier) { instruction.owner = it}
+                    transformField(instruction.desc, needTranformationNotifier) { instruction.desc = it }
                 } else if (instruction is InvokeDynamicInsnNode) {
-                    if (transformField(instruction.desc) { instruction.desc = it }) {
-                        doTransform = true
-                    }
-                    if (transformHandle(instruction.bsm) { instruction.bsm = it }) {
-                        doTransform = true
-                    }
+                    transformField(instruction.desc, needTranformationNotifier) { instruction.desc = it }
+                    transformHandle(instruction.bsm, needTranformationNotifier) { instruction.bsm = it }
                     for (index in instruction.bsmArgs.indices) {
                         val arg = instruction.bsmArgs[index]
                         if (arg is Type) {
-                            if (transformField(arg.descriptor) { instruction.bsmArgs[index] = Type.getType(it) }) {
-                                doTransform = true
-                            }
+                            transformField(arg.descriptor, needTranformationNotifier) { instruction.bsmArgs[index] = Type.getType(it) }
                         } else if (arg is Handle) {
-                            if (transformHandle(arg) { instruction.bsmArgs[index] = it }) {
-                                doTransform = true
-                            }
+                            transformHandle(arg, needTranformationNotifier) { instruction.bsmArgs[index] = it }
                         }
                     }
                 } else if (instruction is FrameNode) {
-                    if (transformFrame(instruction.local)) {
-                        doTransform = true
-                    }
-                    if (transformFrame(instruction.stack)) {
-                        doTransform = true
-                    }
+                    transformFrame(instruction.local, needTranformationNotifier)
+                    transformFrame(instruction.stack, needTranformationNotifier)
                 }
             }
         }
         method.localVariables?.forEach { variable ->
-            if (transformField(variable.desc) { variable.desc = it }) {
-                doTransform = true
-            }
-            if (transformField(variable.signature) { variable.signature = it }) {
-                doTransform = true
-            }
+            transformField(variable.desc, needTranformationNotifier) { variable.desc = it }
+            transformField(variable.signature, needTranformationNotifier) { variable.signature = it }
         }
-        if (transformField(method.desc) { method.desc = it }) {
-            doTransform = true
-        }
-        if (transformField(method.signature) { method.signature = it }) {
-            doTransform = true
-        }
+        transformField(method.desc, needTranformationNotifier) { method.desc = it }
+        transformField(method.signature, needTranformationNotifier) { method.signature = it }
     }
-    for (impl in interfaceImplementationsToRemove) {
-        if (node.interfaces.remove(impl)) {
-            doTransform = true
-        }
+    interfaces?.removeAll(interfaceImplementationsToRemove)?.let {
+        doTransform = doTransform || it
     }
     return doTransform
 }
 
-private fun transformFrame(frame: MutableList<Any>?): Boolean {
+private fun transformFrame(frame: MutableList<Any>?, notifyNeedTransform: () -> Unit) {
     if (frame != null) {
-        var doTransform = false
         for (index in frame.indices) {
             val arg = frame[index]
-            if (arg is String && transformField(arg) { frame[index] = it }) {
-                doTransform = true
+            if (arg is String) {
+                transformField(arg, notifyNeedTransform) { frame[index] = it }
             }
         }
-        return doTransform
     }
-    return false
 }
 
-private fun transformHandle(handle: Handle?, fieldSetter: (Handle) -> Unit): Boolean {
+private fun transformHandle(handle: Handle?, notifyNeedTransform: () -> Unit, fieldSetter: (Handle) -> Unit) {
     if (handle != null) {
         var owner = handle.owner
         var desc = handle.desc
-        if (transformField(handle.owner) { owner = it } || transformField(handle.desc) { desc = it }) {
+        var needTransformation = false
+        run {
+            @Suppress("NAME_SHADOWING") val notifyNeedTransform = {
+                needTransformation = true
+            }
+            transformField(handle.owner, notifyNeedTransform) { owner = it }
+            transformField(handle.desc, notifyNeedTransform) { desc = it }
+        }
+        if (needTransformation) {
             fieldSetter(Handle(handle.tag, owner, handle.name, desc, handle.isInterface))
-            return true
+            notifyNeedTransform()
         }
     }
-    return false
 }
 
-private fun transformField(field: String?, fieldSetter: (String) -> Unit): Boolean {
+private fun transformField(field: String?, notifyNeedTransform: () -> Unit, fieldSetter: (String) -> Unit) {
     if (field != null) {
         var doTransform = false
         var transformed: String = field
@@ -209,14 +205,7 @@ private fun transformField(field: String?, fieldSetter: (String) -> Unit): Boole
         }
         if (doTransform) {
             fieldSetter(transformed)
-            return true
+            notifyNeedTransform()
         }
     }
-    return false
-}
-
-private fun rewriteClassNode(file: File, node: ClassNode) {
-    val classWriter = ClassWriter(0)
-    node.accept(classWriter)
-    file.writeBytes(classWriter.toByteArray())
 }

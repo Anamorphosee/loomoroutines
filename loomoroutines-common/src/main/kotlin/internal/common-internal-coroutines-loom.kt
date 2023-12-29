@@ -3,7 +3,6 @@
 package dev.reformator.loomoroutines.common.internal
 
 import dev.reformator.loomoroutines.common.NotRunningCoroutine
-import dev.reformator.loomoroutines.common.RunningCoroutine
 import dev.reformator.loomoroutines.common.SuspendedCoroutine
 import jdk.internal.vm.Continuation
 import jdk.internal.vm.ContinuationScope
@@ -40,10 +39,10 @@ class LoomSuspendedCoroutine<out T>(
                     }
                 }
             }
-            if (continuation.isDone) {
-                return CompletedCoroutineImpl(coroutineContext)
+            return if (continuation.isDone) {
+                CompletedCoroutineImpl(coroutineContext)
             } else {
-                return LoomSuspendedCoroutine(coroutineContext, continuation, newCoroutineStack!!)
+                LoomSuspendedCoroutine(coroutineContext, continuation, newCoroutineStack!!)
             }
         } else {
             error("Suspended coroutine has already resumed.")
@@ -61,7 +60,7 @@ private class LoomRunningCoroutine<out T>(
 }
 
 object LoomCoroutineFactory: CoroutineFactory {
-    override fun <T> createCoroutine(context: T, body: Action): LoomSuspendedCoroutine<T> {
+    override fun <T> createCoroutine(context: T, body: Runnable): LoomSuspendedCoroutine<T> {
         val continuation = Continuation(ContinuationScope("Loomoroutines"), body)
         return LoomSuspendedCoroutine(
             coroutineContext = context,

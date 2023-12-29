@@ -26,12 +26,12 @@ class DispatcherContextImpl<T>: DispatcherContext<T>, Promise<T> {
         //In dispatcher coroutine
         if (isInDispatcher) {
             var result: PromiseResult<T>? = null
-            await(Callback { awakener ->
+            await { notifier ->
                 subscribe {
                     result = it
-                    awakener()
+                    notifier()
                 }
-            })
+            }
             return result!!.get()
         }
 
@@ -48,7 +48,7 @@ class DispatcherContextImpl<T>: DispatcherContext<T>, Promise<T> {
         }
     }
 
-    override fun subscribe(callback: Callback<PromiseResult<T>>) {
+    override fun subscribe(callback: Consumer<PromiseResult<T>>) {
         while (true) {
             val state = _state.get()
             if (
@@ -72,7 +72,7 @@ class DispatcherContextImpl<T>: DispatcherContext<T>, Promise<T> {
     override val lastEvent: DispatcherEvent
         get() = _lastEvent.getAndSet(null) ?: error("Last event is not set.")
 
-    override fun setAwaitLastEvent(callback: Callback<Action>) {
+    override fun setAwaitLastEvent(callback: Consumer<Notifier>) {
         setLastEvent(AwaitDispatcherEvent(callback))
     }
 
@@ -121,7 +121,7 @@ private sealed interface RunningDispatcherContextImplState<out T>: DispatcherCon
 private data object EmptyRunningDispatcherContextImplState: RunningDispatcherContextImplState<Nothing>
 
 private class NotEmptyRunningDispatcherContextImplState<T>(
-    val callback: Callback<PromiseResult<T>>,
+    val callback: Consumer<PromiseResult<T>>,
     val next: RunningDispatcherContextImplState<T>
 ): RunningDispatcherContextImplState<T> {
     override val state: PromiseState
@@ -133,7 +133,7 @@ private class CompletedDispatcherContextImplState<out T>(val result: PromiseResu
         get() = if (result.succeed) PromiseState.COMPLETED else PromiseState.EXCEPTIONAL
 }
 
-private fun <T> callCallback(callback: Callback<T>, result: T) {
+private fun <T> callCallback(callback: Consumer<T>, result: T) {
     try {
         callback(result)
     } catch (e: Throwable) {

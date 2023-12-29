@@ -3,13 +3,13 @@ package dev.reformator.loomoroutines.common.internal
 import dev.reformator.loomoroutines.common.*
 import java.util.concurrent.atomic.AtomicReference
 
-class GeneratorIterator<out T>(generator: Callback<GeneratorScope<T>>): Iterator<T> {
+class GeneratorIterator<out T>(generator: Consumer<GeneratorScope<T>>): Iterator<T> {
     private val state = AtomicReference<GeneratorIteratorState<T>>(NotBufferedGeneratorIteratorState)
     private var coroutine: SuspendedCoroutine<GeneratorIteratorContext<T>>
 
     init {
         val context = GeneratorIteratorContext<T>()
-        coroutine = createCoroutine(context, Action { generator(context) })
+        coroutine = createCoroutine(context) { generator(context) }
     }
 
     override fun hasNext(): Boolean =
@@ -70,9 +70,13 @@ private class GeneratorIteratorContext<T>: GeneratorScope<T> {
     private var _buffer: T? = null
 
     override fun emit(value: T) {
-        val coroutine = getRunningCoroutineByContext(this)!!
-        _buffer = value
-        coroutine.suspend()
+        suspendCoroutine { it: Any? ->
+            val suspend = it === this
+            if (suspend) {
+                _buffer = value
+            }
+            suspend
+        }
     }
 
     val buffer: T

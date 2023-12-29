@@ -2,7 +2,6 @@ package dev.reformator.loomoroutines.dispatcher.internal
 
 import dev.reformator.loomoroutines.common.CompletedCoroutine
 import dev.reformator.loomoroutines.common.SuspendedCoroutine
-import dev.reformator.loomoroutines.common.internal.Action
 import dev.reformator.loomoroutines.common.internal.error
 import dev.reformator.loomoroutines.common.internal.getLogger
 import dev.reformator.loomoroutines.common.internal.invoke
@@ -10,6 +9,7 @@ import dev.reformator.loomoroutines.common.internal.kotlinstdlibstub.Ref
 import dev.reformator.loomoroutines.dispatcher.Dispatcher
 import dev.reformator.loomoroutines.dispatcher.ExceptionalPromiseResult
 import dev.reformator.loomoroutines.dispatcher.SucceedPromiseResult
+import dev.reformator.loomoroutines.dispatcher.Notifier
 import java.util.concurrent.atomic.AtomicBoolean
 
 private val log = getLogger()
@@ -42,11 +42,11 @@ private fun <T> Dispatcher.dispatchInCurrentThread(
                 when (val event = context.lastEvent) {
                     is AwaitDispatcherEvent -> {
                         val awakened = AtomicBoolean(false)
-                        event.callback(Action {
+                        event.callback(Notifier {
                             if (awakened.compareAndSet(false, true)) {
                                 dispatch(nextPoint, result)
                             } else {
-                                error("Awakener is already called.")
+                                error("Notifier is already invoked.")
                             }
                         })
                     }

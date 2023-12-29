@@ -1,16 +1,14 @@
 package dev.reformator.loomoroutines.dispatcher
 
-import dev.reformator.loomoroutines.common.internal.Action
-import dev.reformator.loomoroutines.common.internal.Callback
-import dev.reformator.loomoroutines.common.internal.invoke
+import dev.reformator.loomoroutines.common.internal.Consumer
 import java.time.Duration
 
 interface Dispatcher {
-    fun execute(action: Action) {
+    fun execute(action: Runnable) {
         scheduleExecute(Duration.ZERO, action)
     }
 
-    fun scheduleExecute(delay: Duration, action: Action)
+    fun scheduleExecute(delay: Duration, action: Runnable)
 
     fun canExecuteInCurrentThread(): Boolean =
         false
@@ -25,7 +23,7 @@ interface Promise<out T> {
 
     fun join(): T
 
-    fun subscribe(callback: Callback<PromiseResult<T>>)
+    fun subscribe(callback: Consumer<PromiseResult<T>>)
 }
 
 enum class PromiseState {

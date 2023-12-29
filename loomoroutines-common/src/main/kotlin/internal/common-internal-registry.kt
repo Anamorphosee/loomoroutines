@@ -1,14 +1,12 @@
 package dev.reformator.loomoroutines.common.internal
 
-import dev.reformator.loomoroutines.common.RunningCoroutine
-
 val runningCoroutinesScoped: Scoped<MutableList<RunningCoroutine<*>>> = ThreadLocalScoped()
 
 val coroutineFactory: CoroutineFactory = LoomCoroutineFactory
 
-private val newRunningCoroutinesListGenerator = Generator<MutableList<RunningCoroutine<*>>> { mutableListOf() }
+private val newRunningCoroutinesListGenerator = Supplier<MutableList<RunningCoroutine<*>>> { mutableListOf() }
 
-fun performInRunningCoroutinesScope(action: Action) {
+fun performInRunningCoroutinesScope(action: Runnable) {
     runningCoroutinesScoped.performReusable(newRunningCoroutinesListGenerator, action)
 }
 

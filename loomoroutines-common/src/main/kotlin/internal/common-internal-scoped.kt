@@ -1,9 +1,7 @@
 package dev.reformator.loomoroutines.common.internal
 
-import dev.reformator.loomoroutines.common.internal.invoke
-
 interface Scoped<T> {
-    fun performReusable(ifNotSet: Generator<T>, action: Action)
+    fun performReusable(ifNotSet: Supplier<T>, body: Runnable)
 
     fun get(): T
 
@@ -22,17 +20,17 @@ class ThreadLocalScoped<T>: Scoped<T> {
         }
     }
 
-    override fun performReusable(ifNotSet: Generator<T>, action: Action) {
+    override fun performReusable(ifNotSet: Supplier<T>, body: Runnable) {
         val currentValue = value.get()
         if (currentValue === noValue) {
             try {
                 value.set(ifNotSet())
-                action()
+                body()
             } finally {
                 value.remove()
             }
         } else {
-            action()
+            body()
         }
     }
 

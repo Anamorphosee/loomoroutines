@@ -1,6 +1,5 @@
 package dev.reformator.loomoroutines.dispatcher
 
-import dev.reformator.loomoroutines.common.internal.Action
 import dev.reformator.loomoroutines.common.internal.invoke
 import java.time.Duration
 import java.util.concurrent.Executors
@@ -9,11 +8,11 @@ import javax.swing.SwingUtilities
 
 @Suppress("Since15")
 object VirtualThreadsDispatcher: Dispatcher {
-    override fun execute(action: Action) {
+    override fun execute(action: Runnable) {
         Thread.startVirtualThread(action)
     }
 
-    override fun scheduleExecute(delay: Duration, action: Action) {
+    override fun scheduleExecute(delay: Duration, action: Runnable) {
         Thread.startVirtualThread {
             Thread.sleep(delay)
             action()
@@ -27,11 +26,11 @@ object VirtualThreadsDispatcher: Dispatcher {
 object SwingDispatcher: Dispatcher {
     private val scheduledExecutor = Executors.newSingleThreadScheduledExecutor()
 
-    override fun execute(action: Action) {
+    override fun execute(action: Runnable) {
         SwingUtilities.invokeLater(action)
     }
 
-    override fun scheduleExecute(delay: Duration, action: Action) {
+    override fun scheduleExecute(delay: Duration, action: Runnable) {
         scheduledExecutor.schedule({ SwingUtilities.invokeLater(action) }, delay.toMillis(), TimeUnit.MILLISECONDS)
     }
 

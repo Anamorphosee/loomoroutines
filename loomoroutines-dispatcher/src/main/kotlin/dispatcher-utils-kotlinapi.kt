@@ -1,29 +1,27 @@
-@file:JvmName("KotlinDispatcherUtils")
-
 package dev.reformator.loomoroutines.dispatcher
 
-import dev.reformator.loomoroutines.common.internal.Callback
-import dev.reformator.loomoroutines.common.internal.Generator
-import dev.reformator.loomoroutines.common.internal.invoke
+import dev.reformator.loomoroutines.common.internal.Consumer
+import dev.reformator.loomoroutines.common.internal.Supplier
 import kotlin.time.Duration
 import kotlin.time.toJavaDuration
 
 @CallOnlyInDispatcher
-inline fun await(crossinline callback: (awakener: () -> Unit) -> Unit) {
-    await(Callback { awakener ->
-        callback { awakener() }
-    })
+@JvmSynthetic
+inline fun await(crossinline callback: (Notifier) -> Unit) {
+    await(Consumer { callback(it) })
 }
 
 @CallOnlyInDispatcher
-@Suppress("NOTHING_TO_INLINE")
-inline fun delay(duration: Duration) {
+@JvmSynthetic
+fun delay(duration: Duration) {
     delay(duration.toJavaDuration())
 }
 
 @CallOnlyInDispatcher
-inline fun <T> doIn(dispatcher: Dispatcher, crossinline generator: () -> T): T =
-    doIn(dispatcher, Generator { generator() })
+@JvmSynthetic
+inline fun <T> doIn(dispatcher: Dispatcher, crossinline action: () -> T): T =
+    doIn(dispatcher, Supplier { action() })
 
+@JvmSynthetic
 inline fun <T> Dispatcher.dispatch(crossinline body: () -> T): Promise<T> =
-    dispatch(Generator { body() })
+    dispatch(Supplier { body() })
