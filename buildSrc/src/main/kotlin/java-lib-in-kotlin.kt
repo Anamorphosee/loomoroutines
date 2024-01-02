@@ -12,15 +12,10 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 class JavalibInKotlinPlugin: Plugin<Project> {
     override fun apply(target: Project) {
         target.extraProperties.set("kotlin.stdlib.default.dependency", "false")
-        target.extraProperties.set("kotlinVersion", "")
         target.plugins.apply("org.jetbrains.kotlin.jvm")
-        target.tasks.withType(KotlinCompile::class.java) {
+        target.tasks.named("compileKotlin", KotlinCompile::class.java) {
             doLast {
-                target.layout.buildDirectory.get()
-                    .dir("classes")
-                    .dir("kotlin")
-                    .dir("main")
-                    .transform()
+                destinationDirectory.get().transform()
             }
         }
     }
@@ -84,6 +79,8 @@ private val typeReplacement = mapOf(
     "kotlin/jvm/internal/Intrinsics" to "dev/reformator/loomoroutines/common/internal/kotlinstdlibstub/Intrinsics",
     "kotlin/collections/CollectionsKt" to "dev/reformator/loomoroutines/common/internal/kotlinstdlibstub/CollectionsKt",
     "kotlin/text/StringsKt" to "dev/reformator/loomoroutines/common/internal/kotlinstdlibstub/StringsKt",
+    "kotlin/enums/EnumEntriesKt" to "dev/reformator/loomoroutines/common/internal/kotlinstdlibstub/EnumEntriesKt",
+    "kotlin/enums/EnumEntries" to "dev/reformator/loomoroutines/common/internal/kotlinstdlibstub/EnumEntries",
 
     "kotlin/jvm/internal/Ref" to "dev/reformator/loomoroutines/common/internal/kotlinstdlibstub/Ref",
     "kotlin/jvm/internal/Ref\$ObjectRef" to "dev/reformator/loomoroutines/common/internal/kotlinstdlibstub/Ref\$ObjectRef",

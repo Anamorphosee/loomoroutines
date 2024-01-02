@@ -17,23 +17,23 @@ public class Main {
     }
 
     private static void checkInnerScope() {
-        log.atInfo().log(() -> "call0: " + CoroutineUtils.getRunningCoroutineContexts());
+        log.atInfo().log(() -> "call0: " + CoroutineUtils.getRunningCoroutinesContexts());
         var point1 = CoroutineUtils.createCoroutine("context1", () -> {
-            log.atInfo().log(() -> "call1: " + CoroutineUtils.getRunningCoroutineContexts());
-            var point2 = CoroutineUtils.toSuspended(CoroutineUtils.createCoroutine("context2", () -> {
-                log.atInfo().log(() -> "call2: " + CoroutineUtils.getRunningCoroutineContexts());
+            log.atInfo().log(() -> "call1: " + CoroutineUtils.getRunningCoroutinesContexts());
+            var point2 = CoroutineUtils.createCoroutine("context2", () -> {
+                log.atInfo().log(() -> "call2: " + CoroutineUtils.getRunningCoroutinesContexts());
                 CoroutineUtils.suspendCoroutine(context -> Objects.equals(context, "context1"));
-                log.atInfo().log(() -> "call3: " + CoroutineUtils.getRunningCoroutineContexts());
+                log.atInfo().log(() -> "call3: " + CoroutineUtils.getRunningCoroutinesContexts());
                 CoroutineUtils.suspendCoroutine(context -> Objects.equals(context, "context2"));
-                log.atInfo().log(() -> "call4: " + CoroutineUtils.getRunningCoroutineContexts());
-            })).resume();
-            log.atInfo().log(() -> "call5: " + CoroutineUtils.getRunningCoroutineContexts());
+                log.atInfo().log(() -> "call4: " + CoroutineUtils.getRunningCoroutinesContexts());
+            }).resume();
+            log.atInfo().log(() -> "call5: " + CoroutineUtils.getRunningCoroutinesContexts());
             CoroutineUtils.toSuspended(point2).resume();
-            log.atInfo().log(() -> "call6: " + CoroutineUtils.getRunningCoroutineContexts());
+            log.atInfo().log(() -> "call6: " + CoroutineUtils.getRunningCoroutinesContexts());
         }).resume();
-        log.atInfo().log(() -> "call7: " + CoroutineUtils.getRunningCoroutineContexts());
+        log.atInfo().log(() -> "call7: " + CoroutineUtils.getRunningCoroutinesContexts());
         CoroutineUtils.toSuspended(point1).resume();
-        log.atInfo().log(() -> "call8: " + CoroutineUtils.getRunningCoroutineContexts());
+        log.atInfo().log(() -> "call8: " + CoroutineUtils.getRunningCoroutinesContexts());
     }
 
     private static void checkGenerator() {

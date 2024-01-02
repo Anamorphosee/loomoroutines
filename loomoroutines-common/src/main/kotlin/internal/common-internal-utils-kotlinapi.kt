@@ -22,6 +22,30 @@ inline fun Logger.info(message: () -> String) {
     }
 }
 
+inline fun Logger.debug(e: Throwable, message: () -> String) {
+    if (isDebugEnabled) {
+        debug(message(), e)
+    }
+}
+
+inline fun Logger.debug(message: () -> String) {
+    if (isDebugEnabled) {
+        debug(message())
+    }
+}
+
+inline fun Logger.trace(e: Throwable, message: () -> String) {
+    if (isTraceEnabled) {
+        trace(message(), e)
+    }
+}
+
+inline fun Logger.trace(message: () -> String) {
+    if (isTraceEnabled) {
+        trace(message())
+    }
+}
+
 inline fun Logger.error(e: Throwable, message: () -> String) {
     if (isErrorEnabled) {
         error(message(), e)

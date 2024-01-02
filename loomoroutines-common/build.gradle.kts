@@ -2,7 +2,6 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     id("dev.reformator.javalibinkotlin")
-    id("dev.reformator.removejigsawdummy")
 }
 
 repositories {
@@ -28,7 +27,14 @@ kotlin {
     }
 }
 
+sourceSets {
+    main {
+        kotlin.destinationDirectory = java.destinationDirectory
+    }
+}
+
 tasks.test {
     useJUnitPlatform()
+    jvmArgs("--add-exports", "java.base/jdk.internal.vm=ALL-UNNAMED")
 }
 

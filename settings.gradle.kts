@@ -3,5 +3,6 @@ include(
     "loomoroutines-common",
     "loomoroutines-dispatcher",
     "loomoroutines-dispatcher-swing",
-    "loomoroutines-kotlincoroutines-common"
+    "loomoroutines-kotlincoroutines-common",
+    "kotlin-tests"
 )
