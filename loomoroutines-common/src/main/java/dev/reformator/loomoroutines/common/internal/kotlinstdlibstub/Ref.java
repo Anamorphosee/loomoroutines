@@ -13,4 +13,12 @@ public class Ref {
             return String.valueOf(element);
         }
     }
+
+    public static final class IntRef implements Serializable {
+        public int element;
+
+        public String toString() {
+            return String.valueOf(this.element);
+        }
+    }
 }

@@ -12,8 +12,10 @@ dependencies {
     compileOnly("org.jetbrains.kotlin:kotlin-stdlib:${kotlin.coreLibrariesVersion}")
     implementation("org.slf4j:slf4j-api:${properties["slf4jVersion"]}")
 
+    testImplementation("org.junit.jupiter:junit-jupiter-api:${properties["jupiterVersion"]}")
+    testImplementation("org.apache.commons:commons-lang3:${properties["commonsLang3Version"]}")
     testRuntimeOnly("ch.qos.logback:logback-classic:${properties["logbackVersion"]}")
-    testImplementation("org.junit.jupiter:junit-jupiter:${properties["jupiterVersion"]}")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${properties["jupiterVersion"]}")
 }
 
 java {
@@ -36,6 +38,6 @@ sourceSets {
 
 tasks.test {
     useJUnitPlatform()
-    jvmArgs("--add-exports", "java.base/jdk.internal.vm=ALL-UNNAMED")
+    jvmArgs("--add-exports", "java.base/jdk.internal.vm=dev.reformator.loomoroutines.common")
 }
 
