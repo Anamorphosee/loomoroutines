@@ -57,3 +57,25 @@ inline fun Logger.error(message: () -> String) {
         error(message())
     }
 }
+
+inline fun loop(body: () -> Unit): Nothing {
+    while (true) {
+        body()
+    }
+}
+
+inline fun assert(message: String = "Assertion check failed.", body: () -> Boolean) {
+    if (assertionEnabled && !body()) {
+        error(message)
+    }
+}
+
+inline fun ifAssert(message: String = "Assertion check failed.", assertBody: () -> Boolean, notAssertBody: () -> Unit) {
+    if (assertionEnabled) {
+        if (!assertBody()) {
+            error("message")
+        }
+    } else {
+        notAssertBody()
+    }
+}

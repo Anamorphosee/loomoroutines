@@ -3,7 +3,6 @@ package dev.reformator.loomoroutines.common.internal
 import dev.reformator.loomoroutines.common.CompletedCoroutine
 import dev.reformator.loomoroutines.common.SuspendedCoroutine
 
-
 enum class SuspensionCommand {
     CONTINUE, BREAK, SUSPEND_AND_BREAK
 }

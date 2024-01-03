@@ -27,27 +27,17 @@ class TestCoroutinePerformance {
 
     @Test
     fun fibonacciIterator() {
-        var value: Long = 0
-        var coroutine = createCoroutine(null) {
-            generateFibonacci {
-                value = it
-                suspendCoroutine(alwaysTruePredicate)
-            }
-        }
-
-        val repeatTimes = 10000
-
         System.setProperty("marker", "kotlin")
         val kotlinIter = iterator {
             generateFibonacci { yield(it) }
         }
-        doMeasurement(repeatTimes = repeatTimes, action = kotlinIter::next)
+        doMeasurement(action = kotlinIter::next)
 
         System.setProperty("marker", "loomoroutines")
-        doMeasurement(repeatTimes = repeatTimes, action = {
-            coroutine = coroutine.resume().toSuspended()!!
-            value
-        })
+        val loomIter = loomIterator {
+            generateFibonacci(::emit)
+        }
+        doMeasurement(action = loomIter::next)
     }
 }
 
@@ -63,7 +53,7 @@ inline fun generateFibonacci(emit: (Long) -> Unit) {
 }
 
 inline fun <T> doMeasurement(
-    repeatTimes: Int = 500,
+    repeatTimes: Int = 10000,
     logRound: (TimedValue<T>) -> Unit = { log.debug { "got item ${it.value} in ${it.duration}" } },
     logSummary: (average: Duration, median: Duration) -> Unit = { average: Duration, median: Duration ->
         log.info { "median duration is $median" }
@@ -80,6 +70,6 @@ inline fun <T> doMeasurement(
     times.sort()
     logSummary(
         times.reduce(Duration::plus) / repeatTimes,
-        (times[times.size / 2] + times[(times.size + 1) / 2]) / 2
+        (times[times.size / 2] + times[(times.size - 1) / 2]) / 2
     )
 }

@@ -30,9 +30,5 @@ gradlePlugin {
             id = "dev.reformator.javalibinkotlin"
             implementationClass = "dev.reformator.gradle.javalibinkotlin.JavalibInKotlinPlugin"
         }
-        create("removeJigsawDummy") {
-            id = "dev.reformator.removejigsawdummy"
-            implementationClass = "dev.reformator.gradle.removejigsawdummy.RemoveJigsawDummyPlugin"
-        }
     }
 }

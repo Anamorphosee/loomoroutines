@@ -1,10 +1,9 @@
 package dev.reformator.loomoroutines.common.internal
 
 import dev.reformator.loomoroutines.common.*
-import java.util.concurrent.atomic.AtomicReference
 
 class GeneratorIterator<out T>(generator: Consumer<GeneratorScope<T>>): Iterator<T> {
-    private val state = AtomicReference<GeneratorIteratorState<T>>(NotBufferedGeneratorIteratorState)
+    private val state = atomic<GeneratorIteratorState<T>>(NotBufferedGeneratorIteratorState)
     private var coroutine: SuspendedCoroutine<GeneratorIteratorContext<T>>
 
     init {
@@ -16,43 +15,61 @@ class GeneratorIterator<out T>(generator: Consumer<GeneratorScope<T>>): Iterator
         buffer()
 
     override fun next(): T {
-        while (true) {
+        loop {
             if (!buffer()) {
                 throw NoSuchElementException("Generator has already finished.")
             }
-            val state = state.get()
+            val state = state.value
             if (state is BufferedGeneratorIteratorState<T>
-                && this.state.compareAndSet(state, NotBufferedGeneratorIteratorState)) {
+                && this.state.cas(state, NotBufferedGeneratorIteratorState)) {
                 return state.buffer
             }
         }
     }
 
     private fun buffer(): Boolean {
-        while (true) {
-            if (state.compareAndSet(NotBufferedGeneratorIteratorState, BufferingGeneratorIteratorState)) {
+        loop {
+            if (state.cas(NotBufferedGeneratorIteratorState, BufferingGeneratorIteratorState)) {
                 try {
                     when (val nextCoroutine = coroutine.resume()) {
                         is SuspendedCoroutine<GeneratorIteratorContext<T>> -> {
-                            state.set(BufferedGeneratorIteratorState(nextCoroutine.coroutineContext.buffer))
                             coroutine = nextCoroutine
+                            ifAssert(assertBody = {
+                                state.cas(
+                                    expectedValue = BufferingGeneratorIteratorState,
+                                    newValue = BufferedGeneratorIteratorState(nextCoroutine.coroutineContext.buffer)
+                                )
+                            }, notAssertBody = {
+                                state.value = BufferedGeneratorIteratorState(nextCoroutine.coroutineContext.buffer)
+                            })
                             return true
                         }
                         is CompletedCoroutine<*> -> {
-                            state.set(FinishedGeneratorIteratorState)
+                            ifAssert(assertBody = {
+                                state.cas(
+                                    expectedValue = BufferingGeneratorIteratorState,
+                                    newValue = FinishedGeneratorIteratorState
+                                )
+                            }, notAssertBody = {
+                                state.value = FinishedGeneratorIteratorState
+                            })
                             return false
                         }
                     }
                 } catch (e: Throwable) {
-                    state.set(ExceptionalGeneratorIteratorState(e))
+                    ifAssert(assertBody = {
+                        state.cas(BufferingGeneratorIteratorState, ExceptionalGeneratorIteratorState(e))
+                    }, notAssertBody = {
+                        state.value = ExceptionalGeneratorIteratorState(e)
+                    })
                     throw e
                 }
             }
-            when (val state = state.get()) {
-                NotBufferedGeneratorIteratorState -> continue
+            when (val state = state.value) {
+                NotBufferedGeneratorIteratorState -> return@loop
                 BufferingGeneratorIteratorState -> error("Generator is already running in an another thread.")
                 is BufferedGeneratorIteratorState<*> -> return true
-                is ExceptionalGeneratorIteratorState -> throw state.exception
+                is ExceptionalGeneratorIteratorState -> throw RuntimeException(state.exception)
                 FinishedGeneratorIteratorState -> return false
             }
         }

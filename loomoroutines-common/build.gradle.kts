@@ -24,6 +24,7 @@ java {
 kotlin {
     compilerOptions {
         jvmTarget = JvmTarget.JVM_19
+        freeCompilerArgs.addAll("-Xjvm-default=all")
     }
 }
 

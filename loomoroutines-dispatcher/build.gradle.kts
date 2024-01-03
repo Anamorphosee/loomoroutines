@@ -2,7 +2,6 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     id("dev.reformator.javalibinkotlin")
-    id("dev.reformator.removejigsawdummy")
 }
 
 repositories {
@@ -27,6 +26,12 @@ kotlin {
     compilerOptions {
         jvmTarget = JvmTarget.JVM_19
         freeCompilerArgs.addAll("-Xjvm-default=all")
+    }
+}
+
+sourceSets {
+    main {
+        kotlin.destinationDirectory = java.destinationDirectory
     }
 }
 

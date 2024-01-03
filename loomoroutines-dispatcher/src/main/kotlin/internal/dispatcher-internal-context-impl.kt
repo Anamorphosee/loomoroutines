@@ -4,20 +4,19 @@ import dev.reformator.loomoroutines.common.internal.*
 import dev.reformator.loomoroutines.dispatcher.*
 import java.time.Duration
 import java.util.concurrent.Semaphore
-import java.util.concurrent.atomic.AtomicReference
 
 private val log = getLogger()
 
 class DispatcherContextImpl<T>: DispatcherContext<T>, Promise<T> {
-    private val _state = AtomicReference<DispatcherContextImplState<T>>(EmptyRunningDispatcherContextImplState)
-    private val _lastEvent = AtomicReference<DispatcherEvent?>()
+    private val _state = atomic<DispatcherContextImplState<T>>(EmptyRunningDispatcherContextImplState)
+    private val _lastEvent = atomic<DispatcherEvent?>(null)
 
     override val state: PromiseState
-        get() = _state.get().state
+        get() = _state.value.state
 
     override fun join(): T {
         //Completed
-        _state.get().let { state ->
+        _state.value.let { state ->
             if (state is CompletedDispatcherContextImplState) {
                 return state.result.get()
             }
@@ -49,11 +48,11 @@ class DispatcherContextImpl<T>: DispatcherContext<T>, Promise<T> {
     }
 
     override fun subscribe(callback: Consumer<PromiseResult<T>>) {
-        while (true) {
-            val state = _state.get()
+        loop {
+            val state = _state.value
             if (
                 state is RunningDispatcherContextImplState<T> &&
-                _state.compareAndSet(state, NotEmptyRunningDispatcherContextImplState(callback, state))
+                _state.cas(state, NotEmptyRunningDispatcherContextImplState(callback, state))
             ) {
                 return
             }
@@ -70,7 +69,7 @@ class DispatcherContextImpl<T>: DispatcherContext<T>, Promise<T> {
     override var dispatcher: Dispatcher? = null
 
     override val lastEvent: DispatcherEvent
-        get() = _lastEvent.getAndSet(null) ?: error("Last event is not set.")
+        get() = _lastEvent.exchange(null) ?: error("Last event is not set.")
 
     override fun setAwaitLastEvent(callback: Consumer<Notifier>) {
         setLastEvent(AwaitDispatcherEvent(callback))
@@ -85,14 +84,15 @@ class DispatcherContextImpl<T>: DispatcherContext<T>, Promise<T> {
     }
 
     override fun complete(result: PromiseResult<T>) {
-        while (true) {
-            var state = _state.get()
+        loop {
+            var state = _state.value
             if (state is RunningDispatcherContextImplState<T>) {
-                if (_state.compareAndSet(state, CompletedDispatcherContextImplState(result))) {
+                if (_state.cas(state, CompletedDispatcherContextImplState(result))) {
                     while (state is NotEmptyRunningDispatcherContextImplState<T>) {
                         callCallback(state.callback, result)
                         state = state.next
                     }
+                    assert { state == EmptyRunningDispatcherContextImplState }
                     return
                 }
             }
@@ -103,7 +103,7 @@ class DispatcherContextImpl<T>: DispatcherContext<T>, Promise<T> {
     }
 
     private fun setLastEvent(event: DispatcherEvent) {
-        if (!_lastEvent.compareAndSet(null, event)) {
+        if (!_lastEvent.cas(null, event)) {
             error("Last event is already set")
         }
     }
@@ -123,10 +123,7 @@ private data object EmptyRunningDispatcherContextImplState: RunningDispatcherCon
 private class NotEmptyRunningDispatcherContextImplState<T>(
     val callback: Consumer<PromiseResult<T>>,
     val next: RunningDispatcherContextImplState<T>
-): RunningDispatcherContextImplState<T> {
-    override val state: PromiseState
-        get() = PromiseState.RUNNING
-}
+): RunningDispatcherContextImplState<T>
 
 private class CompletedDispatcherContextImplState<out T>(val result: PromiseResult<T>): DispatcherContextImplState<T> {
     override val state: PromiseState

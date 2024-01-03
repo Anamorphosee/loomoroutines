@@ -3,6 +3,7 @@ package dev.reformator.loomoroutines.common.internal
 import dev.reformator.loomoroutines.common.internal.kotlinstdlibstub.Ref
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.util.concurrent.atomic.AtomicReference
 import java.util.function.Predicate as JavaPredicate
 import java.util.function.Supplier as JavaSupplier
 import java.util.function.Consumer as JavaConsumer
@@ -29,16 +30,36 @@ val alwaysTruePredicate = Predicate<Any?> { true }
 
 typealias Mutable<T> = Ref.ObjectRef<T>
 
+typealias Atomic<T> = AtomicReference<T>
+
 fun <T> mutable(value: T): Mutable<T> {
     val result = Mutable<T>()
     result.element = value
     return result
 }
 
-var <T> Mutable<T>.value: T
+inline var <T> Mutable<T>.value: T
     get() = element
     set(value) {
         element = value
+    }
+
+@Suppress("NOTHING_TO_INLINE")
+inline fun <T> atomic(value: T): Atomic<T> =
+    Atomic(value)
+
+@Suppress("NOTHING_TO_INLINE")
+inline fun <T> Atomic<T>.cas(expectedValue: T, newValue: T): Boolean =
+    compareAndSet(expectedValue, newValue)
+
+@Suppress("NOTHING_TO_INLINE")
+inline fun <T> Atomic<T>.exchange(newValue: T): T =
+    getAndSet(newValue)
+
+inline var <T> Atomic<T>.value: T
+    get() = get()
+    set(value: T) {
+        set(value)
     }
 
 @Suppress("NOTHING_TO_INLINE")
@@ -62,15 +83,3 @@ inline operator fun Runnable.invoke() {
 @Suppress("NOTHING_TO_INLINE")
 inline operator fun <INPUT, OUTPUT> Function<INPUT, OUTPUT>.invoke(input: INPUT): OUTPUT =
     apply(input)
-
-inline fun loop(body: () -> Unit): Nothing {
-    while (true) {
-        body()
-    }
-}
-
-inline fun assert(message: String = "Assertion check failed.", body: () -> Boolean) {
-    if (assertionEnabled && !body()) {
-        error(message)
-    }
-}

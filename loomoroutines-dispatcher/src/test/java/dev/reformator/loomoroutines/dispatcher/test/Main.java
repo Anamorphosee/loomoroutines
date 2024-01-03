@@ -55,12 +55,13 @@ public class Main {
                 return (Void) null;
             });
 
-            var prom2 = DispatcherUtils.dispatch(disp2, () -> {
+            DispatcherUtils.dispatch(disp2, () -> {
                 log.info("started prom2");
                 var joined = prom1.join();
                 log.atInfo().log(() -> "prom1 joined with " + joined);
                 return "finished";
             }).join();
+
             log.info("finished");
             prom1.join();
         }
