@@ -11,6 +11,7 @@ repositories {
 
 dependencies {
     testImplementation(project(":loomoroutines-common"))
+    testImplementation(project(":loomoroutines-dispatcher"))
     testImplementation(kotlin("test"))
     testImplementation("io.github.microutils:kotlin-logging-jvm:${properties["kotlinLoggingVersion"]}")
     testRuntimeOnly("ch.qos.logback:logback-classic:${properties["logbackVersion"]}")
