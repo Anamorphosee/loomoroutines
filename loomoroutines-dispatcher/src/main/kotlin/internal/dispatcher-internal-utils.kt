@@ -5,7 +5,7 @@ import java.time.Duration
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.TimeUnit
 
-class ScheduledExecutorServiceDispatcher(private val executor: ScheduledExecutorService): CloseableDispatcher {
+internal class ScheduledExecutorServiceDispatcher(private val executor: ScheduledExecutorService): CloseableDispatcher {
     override fun execute(action: Runnable) {
         executor.execute(action)
     }

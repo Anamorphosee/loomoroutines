@@ -2,7 +2,7 @@ package dev.reformator.loomoroutines.common.internal
 
 import dev.reformator.loomoroutines.common.*
 
-class GeneratorIterator<out T>(generator: Consumer<GeneratorScope<T>>): Iterator<T> {
+internal class GeneratorIterator<out T>(generator: Consumer<GeneratorScope<T>>): Iterator<T> {
     private val state = atomic<GeneratorIteratorState<T>>(NotBufferedGeneratorIteratorState)
     private var coroutine: SuspendedCoroutine<GeneratorIteratorContext<T>>
 

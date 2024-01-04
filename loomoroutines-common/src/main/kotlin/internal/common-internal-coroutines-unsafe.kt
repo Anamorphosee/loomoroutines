@@ -52,7 +52,7 @@ private class UnsafeContinuation<out T>(
 private fun getCurrentContinuation(): UnsafeContinuation<*>? =
     Continuation.getCurrentContinuation(scope) as UnsafeContinuation<*>?
 
-object UnsafeCoroutineFactory: CoroutineFactory {
+internal object UnsafeCoroutineFactory: CoroutineFactory {
     override fun <T> createCoroutine(context: T, body: Runnable): SuspendedCoroutine<T> =
         UnsafeContinuation(context, body)
 

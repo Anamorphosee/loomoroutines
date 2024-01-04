@@ -7,7 +7,7 @@ import java.util.concurrent.Semaphore
 
 private val log = getLogger()
 
-class DispatcherContextImpl<T>: DispatcherContext<T>, Promise<T> {
+internal class DispatcherContextImpl<T>: DispatcherContext<T>, Promise<T> {
     private val _state = atomic<DispatcherContextImplState<T>>(EmptyRunningDispatcherContextImplState)
     private val _lastEvent = atomic<DispatcherEvent?>(null)
 

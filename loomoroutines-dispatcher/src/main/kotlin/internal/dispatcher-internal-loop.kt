@@ -14,7 +14,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 private val log = getLogger()
 
-fun <T> Dispatcher.dispatch(coroutine: SuspendedCoroutine<DispatcherContext<T>>, result: Ref.ObjectRef<T>) {
+internal fun <T> Dispatcher.dispatch(coroutine: SuspendedCoroutine<DispatcherContext<T>>, result: Ref.ObjectRef<T>) {
     if (canExecuteInCurrentThread()) {
         dispatchInCurrentThread(coroutine, result)
     } else {

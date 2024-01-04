@@ -65,14 +65,14 @@ private class LoomContinuation<out T>(
     }
 }
 
-enum class LoomContinuationState {
+internal enum class LoomContinuationState {
     RUNNING, SUSPENSION_INHERITED, SUSPENDED
 }
 
 private fun getCurrentContinuation(): LoomContinuation<*>? =
     Continuation.getCurrentContinuation(scope) as LoomContinuation<*>?
 
-object LoomCoroutineFactory: CoroutineFactory {
+internal object LoomCoroutineFactory: CoroutineFactory {
     override fun <T> createCoroutine(context: T, body: Runnable): SuspendedCoroutine<T> =
         LoomSuspendedCoroutine(LoomContinuation(context, body))
 

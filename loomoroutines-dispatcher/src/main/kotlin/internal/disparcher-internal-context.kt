@@ -7,7 +7,7 @@ import dev.reformator.loomoroutines.dispatcher.PromiseResult
 import dev.reformator.loomoroutines.dispatcher.Notifier
 import java.time.Duration
 
-interface DispatcherContext<T> {
+internal interface DispatcherContext<T> {
     val promise: Promise<T>
 
     var dispatcher: Dispatcher?
@@ -23,10 +23,10 @@ interface DispatcherContext<T> {
     fun complete(result: PromiseResult<T>)
 }
 
-sealed interface DispatcherEvent
+internal sealed interface DispatcherEvent
 
-class AwaitDispatcherEvent(val callback: Consumer<Notifier>): DispatcherEvent
+internal class AwaitDispatcherEvent(val callback: Consumer<Notifier>): DispatcherEvent
 
-class DelayDispatcherEvent(val duration: Duration): DispatcherEvent
+internal class DelayDispatcherEvent(val duration: Duration): DispatcherEvent
 
-class SwitchDispatcherEvent(val newDispatcher: Dispatcher): DispatcherEvent
+internal class SwitchDispatcherEvent(val newDispatcher: Dispatcher): DispatcherEvent
