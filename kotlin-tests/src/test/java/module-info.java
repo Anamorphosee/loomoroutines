@@ -1,4 +1,4 @@
-module loomoroutinestest.kotlin.tests {
+module tests {
     requires dev.reformator.loomoroutines.common;
     requires dev.reformator.loomoroutines.dispatcher;
     requires io.github.microutils.kotlinlogging;
