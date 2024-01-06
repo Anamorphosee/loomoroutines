@@ -61,6 +61,25 @@ private fun getCurrentContinuation(): LoomContinuation<*>? =
     Continuation.getCurrentContinuation(scope) as LoomContinuation<*>?
 
 internal object LoomCoroutineFactory: CoroutineFactory {
+    override val isAvailable: Boolean
+        get() =
+            try {
+                LoomContinuation(null) { }.run()
+                true
+            } catch (e: IllegalAccessError) {
+                false
+            }
+
+    fun getUnsupportedSuggestionMessage(): String? {
+        try {
+            LoomContinuation(null) { }.run()
+        } catch (e: IllegalAccessError) {
+            log.debug { "Continuation is not accessible." }
+            return "Continuation is not accessible."
+        }
+        return null
+    }
+
     override fun <T> createCoroutine(context: T, body: Runnable): SuspendedCoroutine<T> =
         LoomSuspendedCoroutine(LoomContinuation(context, body))
 

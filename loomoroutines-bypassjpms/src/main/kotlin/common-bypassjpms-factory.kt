@@ -1,4 +1,4 @@
-package dev.reformator.loomoroutines.common.bypassjpms.internal
+package dev.reformator.loomoroutines.bypassjpms.internal
 
 import dev.reformator.loomoroutines.common.NotRunningCoroutine
 import dev.reformator.loomoroutines.common.SuspendedCoroutine
@@ -37,14 +37,17 @@ private class LoomSuspendedCoroutine<out T>(private val continuation: Any) : Sus
     }
 }
 
-object BypassJpmsCoroutineFactory: CoroutineFactory {
+class BypassJpmsCoroutineFactory: CoroutineFactory {
+    override val isAvailable: Boolean
+        get() = true
+
     override fun <T> createCoroutine(context: T, body: Runnable): SuspendedCoroutine<T> =
         LoomSuspendedCoroutine(LoomoroutinesBypassJpmsContinuationSupport.create(context, body))
 
     override fun forEachRunningCoroutineContext(commandByContext: Function<Any?, SuspensionCommand>) {
         var coroutine = LoomoroutinesBypassJpmsContinuationSupport.getCurrentLoomContinuation()
         while (coroutine != null) {
-            when (LoomoroutinesBypassJpmsContinuationSupport.getContext(coroutine)) {
+            when (commandByContext(LoomoroutinesBypassJpmsContinuationSupport.getContext(coroutine))) {
                 SuspensionCommand.BREAK -> return
                 SuspensionCommand.CONTINUE -> coroutine = LoomoroutinesBypassJpmsContinuationSupport.getNext(coroutine)
                 SuspensionCommand.SUSPEND_AND_BREAK -> {

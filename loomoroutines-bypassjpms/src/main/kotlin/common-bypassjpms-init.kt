@@ -1,4 +1,4 @@
-package dev.reformator.loomoroutines.common.bypassjpms.internal
+package dev.reformator.loomoroutines.bypassjpms.internal
 
 import io.github.toolfactory.jvm.Driver
 import java.lang.invoke.MethodHandles
@@ -72,7 +72,7 @@ internal object LoomoroutinesBypassJpmsContinuationSupport {
 private fun loadLoomContinuationClass(): Class<*> {
     val driver: Driver = Driver.Factory.getNew()
     val lookup: MethodHandles.Lookup = driver.getConsulter(Object::class.java)
-    return lookup.defineClass(loadResource("dev.reformator.loomoroutines.LoomContinuation.class"))
+    return lookup.defineClass(loadResource("dev/reformator/loomoroutines/LoomContinuation.class"))
 }
 
 @Suppress("ClassName")

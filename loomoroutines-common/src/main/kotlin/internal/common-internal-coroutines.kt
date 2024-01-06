@@ -8,6 +8,8 @@ enum class SuspensionCommand {
 }
 
 interface CoroutineFactory {
+    val isAvailable: Boolean
+
     fun <T> createCoroutine(context: T, body: Runnable): SuspendedCoroutine<T>
 
     fun forEachRunningCoroutineContext(commandByContext: Function<Any?, SuspensionCommand>)

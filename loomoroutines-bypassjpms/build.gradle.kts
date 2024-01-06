@@ -44,7 +44,7 @@ kotlin {
 }
 
 tasks.withType<JavaCompile> {
-    options.compilerArgs.addAll(listOf("--add-exports", "java.base/jdk.internal.vm=dev.reformator.loomoroutines.common.bypassjpms"))
+    options.compilerArgs.addAll(listOf("--add-exports", "java.base/jdk.internal.vm=dev.reformator.loomoroutines.bypassjpms"))
     doLast {
         val continuationClassFile = destinationDirectory.get().dir("java").dir("lang_").file("LoomContinuation.class").asFile
         if (continuationClassFile.exists()) {
@@ -91,8 +91,8 @@ tasks.withType<JavaCompile> {
             }
             val classWriter = ClassWriter(0)
             classNode.accept(classWriter)
-            destinationDirectory.file("dev.reformator.loomoroutines.LoomContinuation.class")
-                .get().asFile.writeBytes(classWriter.toByteArray())
+            destinationDirectory.get().dir("dev").dir("reformator").dir("loomoroutines")
+                .file("LoomContinuation.class").asFile.writeBytes(classWriter.toByteArray())
             continuationClassFile.delete()
         }
     }

@@ -3,5 +3,5 @@ include(
     "loomoroutines-common",
     "loomoroutines-dispatcher",
     "kotlin-tests",
-    "loomoroutines-common-bypassjpms"
+    "loomoroutines-bypassjpms"
 )
