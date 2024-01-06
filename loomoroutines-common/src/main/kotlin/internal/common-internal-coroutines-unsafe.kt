@@ -16,35 +16,31 @@ private class UnsafeContinuation<out T>(
     body: Runnable
 ): Continuation(scope, body), SuspendedCoroutine<T> {
     var next: UnsafeContinuation<*>? = null
-    var state = LoomContinuationState.SUSPENDED
 
     fun suspend() {
-        var currentContinuation = getCurrentContinuation()!!
-        while (currentContinuation !== this) {
-            currentContinuation.state = LoomContinuationState.SUSPENSION_INHERITED
-            currentContinuation = currentContinuation.next!!
+        assert {
+            var currentContinuation = getCurrentContinuation()
+            while (currentContinuation != null && currentContinuation !== this) {
+                currentContinuation = currentContinuation.next
+            }
+            currentContinuation === this
         }
-        currentContinuation.state = LoomContinuationState.SUSPENDED
+        next = null
         yield(scope)
     }
 
     override fun resume(): NotRunningCoroutine<T> {
+        assert { next == null }
         next = getCurrentContinuation()
         loop {
-            state = LoomContinuationState.RUNNING
             run()
-            when (state) {
-                LoomContinuationState.SUSPENDED -> {
-                    next = null
-                    return this
-                }
-                LoomContinuationState.SUSPENSION_INHERITED -> {
-                    yield(scope)
-                }
-                LoomContinuationState.RUNNING -> {
-                    return CompletedCoroutineImpl(coroutineContext)
-                }
+            if (isDone) {
+                return CompletedCoroutineImpl(coroutineContext)
             }
+            if (next == null) {
+                return this
+            }
+            yield(scope)
         }
     }
 }

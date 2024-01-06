@@ -81,6 +81,7 @@ private val typeReplacement = mapOf(
     "kotlin/text/StringsKt" to "dev/reformator/loomoroutines/common/internal/kotlinstdlibstub/StringsKt",
     "kotlin/enums/EnumEntriesKt" to "dev/reformator/loomoroutines/common/internal/kotlinstdlibstub/EnumEntriesKt",
     "kotlin/enums/EnumEntries" to "dev/reformator/loomoroutines/common/internal/kotlinstdlibstub/EnumEntries",
+    "kotlin/io/ByteStreamsKt" to "dev/reformator/loomoroutines/common/internal/kotlinstdlibstub/ByteStreamsKt",
 
     "kotlin/jvm/internal/Ref" to "dev/reformator/loomoroutines/common/internal/kotlinstdlibstub/Ref",
     "kotlin/jvm/internal/Ref\$ObjectRef" to "dev/reformator/loomoroutines/common/internal/kotlinstdlibstub/Ref\$ObjectRef",
@@ -94,7 +95,8 @@ private val typeReplacement = mapOf(
     "kotlin/jvm/internal/FunctionBase" to "dev/reformator/loomoroutines/common/internal/kotlinstdlibstub/FunctionBase",
     "kotlin/jvm/internal/Lambda" to "dev/reformator/loomoroutines/common/internal/kotlinstdlibstub/Lambda",
     "kotlin/jvm/functions/Function0" to "dev/reformator/loomoroutines/common/internal/kotlinstdlibstub/Function0",
-    "kotlin/jvm/functions/Function1" to "dev/reformator/loomoroutines/common/internal/kotlinstdlibstub/Function1"
+    "kotlin/jvm/functions/Function1" to "dev/reformator/loomoroutines/common/internal/kotlinstdlibstub/Function1",
+    "kotlin/jvm/functions/Function2" to "dev/reformator/loomoroutines/common/internal/kotlinstdlibstub/Function2"
 )
 
 private val interfaceImplementationsToRemove = listOf(

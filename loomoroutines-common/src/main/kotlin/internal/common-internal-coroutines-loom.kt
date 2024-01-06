@@ -18,24 +18,17 @@ private class LoomSuspendedCoroutine<out T>(private val continuation: LoomContin
 
     override fun resume(): NotRunningCoroutine<T> {
         if (dirty.compareAndSet(false, true)) {
-            assert { continuation.state == LoomContinuationState.SUSPENDED }
+            assert { continuation.next == null }
             continuation.next = getCurrentContinuation()
             loop {
-                continuation.state = LoomContinuationState.RUNNING
                 continuation.run()
-                when (continuation.state) {
-                    LoomContinuationState.SUSPENDED -> {
-                        continuation.next = null
-                        return LoomSuspendedCoroutine(continuation)
-                    }
-                    LoomContinuationState.SUSPENSION_INHERITED -> {
-                        Continuation.yield(scope)
-                    }
-                    LoomContinuationState.RUNNING -> {
-                        assert { continuation.isDone }
-                        return CompletedCoroutineImpl(coroutineContext)
-                    }
+                if (continuation.isDone) {
+                    return CompletedCoroutineImpl(coroutineContext)
                 }
+                if (continuation.next == null) {
+                    return LoomSuspendedCoroutine(continuation)
+                }
+                Continuation.yield(scope)
             }
         } else {
             error("Suspended coroutine has already resumed.")
@@ -50,23 +43,18 @@ private class LoomContinuation<out T>(
     body: Runnable
 ): Continuation(scope, body) {
     var next: LoomContinuation<*>? = null
-    var state = LoomContinuationState.SUSPENDED
 
     fun suspend() {
-        var currentContinuation = getCurrentContinuation()!!
-        while (currentContinuation !== this) {
-            assert { currentContinuation.state == LoomContinuationState.RUNNING }
-            currentContinuation.state = LoomContinuationState.SUSPENSION_INHERITED
-            currentContinuation = currentContinuation.next!!
+        assert {
+            var currentContinuation = getCurrentContinuation()
+            while (currentContinuation != null && currentContinuation !== this) {
+                currentContinuation = currentContinuation.next
+            }
+            currentContinuation === this
         }
-        assert { currentContinuation.state == LoomContinuationState.RUNNING }
-        currentContinuation.state = LoomContinuationState.SUSPENDED
+        next = null
         yield(scope)
     }
-}
-
-internal enum class LoomContinuationState {
-    RUNNING, SUSPENSION_INHERITED, SUSPENDED
 }
 
 private fun getCurrentContinuation(): LoomContinuation<*>? =

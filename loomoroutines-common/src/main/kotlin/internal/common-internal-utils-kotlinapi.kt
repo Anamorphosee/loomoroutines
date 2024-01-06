@@ -73,9 +73,29 @@ inline fun assert(message: String = "Assertion check failed.", body: () -> Boole
 inline fun ifAssert(message: String = "Assertion check failed.", assertBody: () -> Boolean, notAssertBody: () -> Unit) {
     if (assertionEnabled) {
         if (!assertBody()) {
-            error("message")
+            error(message)
         }
     } else {
         notAssertBody()
+    }
+}
+
+@Suppress("PLATFORM_CLASS_MAPPED_TO_KOTLIN")
+inline fun <T: AutoCloseable, R> T.use(block: (T) -> R): R {
+    var exception: Throwable? = null
+    return try {
+        block(this)
+    } catch (e: Throwable) {
+        exception = e
+        throw e
+    } finally {
+        try {
+            close()
+        } catch (e: Throwable) {
+            if (exception != null) {
+                (e as java.lang.Throwable).addSuppressed(exception)
+            }
+            throw e
+        }
     }
 }

@@ -17,3 +17,7 @@ interface Function0<out R> : Function<R> {
 interface Function1<in P1, out R> : Function<R> {
     operator fun invoke(p1: P1): R
 }
+
+interface Function2<in P1, in P2, out R>: Function<R> {
+    operator fun invoke(p1: P1, p2: P2): R
+}

@@ -4,6 +4,6 @@ module dev.reformator.loomoroutines.common {
 
     exports dev.reformator.loomoroutines.common;
 
-    exports dev.reformator.loomoroutines.common.internal to dev.reformator.loomoroutines.dispatcher;
-    exports dev.reformator.loomoroutines.common.internal.kotlinstdlibstub to dev.reformator.loomoroutines.dispatcher;
+    exports dev.reformator.loomoroutines.common.internal to dev.reformator.loomoroutines.dispatcher, dev.reformator.loomoroutines.common.bypassjpms;
+    exports dev.reformator.loomoroutines.common.internal.kotlinstdlibstub to dev.reformator.loomoroutines.dispatcher, dev.reformator.loomoroutines.common.bypassjpms;
 }
