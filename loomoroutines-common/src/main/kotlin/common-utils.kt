@@ -3,10 +3,9 @@
 package dev.reformator.loomoroutines.common
 
 import dev.reformator.loomoroutines.common.internal.*
-import java.util.function.Function as JavaFunction
 
 fun <T> createCoroutine(coroutineContext: T, coroutineBody: Runnable): SuspendedCoroutine<T> =
-    coroutineFactory.createCoroutine(coroutineContext, coroutineBody)
+    LoomoroutinesCommonRegistry.coroutineFactory.createCoroutine(coroutineContext, coroutineBody)
 
 val runningCoroutinesContexts: List<Any?>
     get() {
@@ -54,7 +53,7 @@ fun <T> NotRunningCoroutine<T>.toSuspended(): SuspendedCoroutine<T>? =
 
 private inline fun getRunningCoroutineContextInternal(crossinline predicate: (Any?) -> Boolean): Any? {
     var result: Any? = null
-    coroutineFactory.forEachRunningCoroutineContext {
+    LoomoroutinesCommonRegistry.coroutineFactory.forEachRunningCoroutineContext {
         if (predicate(it)) {
             result = it
             SuspensionCommand.BREAK
@@ -67,7 +66,7 @@ private inline fun getRunningCoroutineContextInternal(crossinline predicate: (An
 
 private inline fun trySuspendCoroutineInternal(crossinline needSuspensionByContext: (Any?) -> Boolean): Boolean {
     var result = false
-    coroutineFactory.forEachRunningCoroutineContext {
+    LoomoroutinesCommonRegistry.coroutineFactory.forEachRunningCoroutineContext {
         if (needSuspensionByContext(it)) {
             result = true
             SuspensionCommand.SUSPEND_AND_BREAK
@@ -85,7 +84,7 @@ private inline fun suspendCoroutineInternal(trySuspend: () -> Boolean) {
 }
 
 private inline fun forEachRunningCoroutineContext(crossinline body: (Any?) -> Unit) {
-    coroutineFactory.forEachRunningCoroutineContext {
+    LoomoroutinesCommonRegistry.coroutineFactory.forEachRunningCoroutineContext {
         body(it)
         SuspensionCommand.CONTINUE
     }

@@ -65,13 +65,13 @@ inline fun loop(body: () -> Unit): Nothing {
 }
 
 inline fun assert(message: String = "Assertion check failed.", body: () -> Boolean) {
-    if (assertionEnabled && !body()) {
+    if (LoomoroutinesCommonRegistry.assertionEnabled && !body()) {
         error(message)
     }
 }
 
 inline fun ifAssert(message: String = "Assertion check failed.", assertBody: () -> Boolean, notAssertBody: () -> Unit) {
-    if (assertionEnabled) {
+    if (LoomoroutinesCommonRegistry.assertionEnabled) {
         if (!assertBody()) {
             error(message)
         }

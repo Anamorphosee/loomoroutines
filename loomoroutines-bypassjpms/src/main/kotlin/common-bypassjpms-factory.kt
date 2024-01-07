@@ -57,4 +57,9 @@ class BypassJpmsCoroutineFactory: CoroutineFactory {
             }
         }
     }
+
+    override fun postInit() {
+        LoomoroutinesBypassJpmsContinuationSupport.assertionEnabled = LoomoroutinesCommonRegistry.assertionEnabled
+        super.postInit()
+    }
 }

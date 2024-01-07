@@ -13,6 +13,8 @@ interface CoroutineFactory {
     fun <T> createCoroutine(context: T, body: Runnable): SuspendedCoroutine<T>
 
     fun forEachRunningCoroutineContext(commandByContext: Function<Any?, SuspensionCommand>)
+
+    fun postInit() { }
 }
 
 class CompletedCoroutineImpl<out T>(override val coroutineContext: T) : CompletedCoroutine<T>
