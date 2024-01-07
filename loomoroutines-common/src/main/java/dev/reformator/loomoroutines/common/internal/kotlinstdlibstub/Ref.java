@@ -21,4 +21,15 @@ public class Ref {
             return String.valueOf(this.element);
         }
     }
+
+    public static final class BooleanRef implements Serializable {
+        public boolean element;
+
+        public BooleanRef() {
+        }
+
+        public String toString() {
+            return String.valueOf(this.element);
+        }
+    }
 }

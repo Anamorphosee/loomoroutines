@@ -53,58 +53,34 @@ fun <T> NotRunningCoroutine<T>.toSuspended(): SuspendedCoroutine<T>? =
     this as? SuspendedCoroutine<T>
 
 private inline fun getRunningCoroutineContextInternal(crossinline predicate: (Any?) -> Boolean): Any? {
-    val callback = getRefAndRunningCoroutineContextCallback { instance, context ->
-        if (predicate(context)) {
-            instance.refValue = context
+    var result: Any? = null
+    coroutineFactory.forEachRunningCoroutineContext {
+        if (predicate(it)) {
+            result = it
             SuspensionCommand.BREAK
         } else {
             SuspensionCommand.CONTINUE
         }
     }
-    coroutineFactory.forEachRunningCoroutineContext(callback)
-    return callback.refValue
+    return result
 }
-
-private abstract class RefAndRunningCoroutineContextCallback: JavaFunction<Any?, SuspensionCommand> {
-    var refValue: Any? = null
-}
-
-private inline fun getRefAndRunningCoroutineContextCallback(
-    crossinline body: (instance: RefAndRunningCoroutineContextCallback, context: Any?) -> SuspensionCommand
-): RefAndRunningCoroutineContextCallback =
-    object: RefAndRunningCoroutineContextCallback() {
-        override fun apply(context: Any?): SuspensionCommand =
-            body(this, context)
-    }
 
 private inline fun trySuspendCoroutineInternal(crossinline needSuspensionByContext: (Any?) -> Boolean): Boolean {
-    val callback = getBooleanAndRunningCoroutineContextCallback { instance, context ->
-        if (needSuspensionByContext(context)) {
-            instance.booleanValue = true
+    var result = false
+    coroutineFactory.forEachRunningCoroutineContext {
+        if (needSuspensionByContext(it)) {
+            result = true
             SuspensionCommand.SUSPEND_AND_BREAK
         } else {
             SuspensionCommand.CONTINUE
         }
     }
-    coroutineFactory.forEachRunningCoroutineContext(callback)
-    return callback.booleanValue
+    return result
 }
-
-private abstract class BooleanAndRunningCoroutineContextCallback: JavaFunction<Any?, SuspensionCommand> {
-    var booleanValue: Boolean = false
-}
-
-private inline fun getBooleanAndRunningCoroutineContextCallback(
-    crossinline body: (instance: BooleanAndRunningCoroutineContextCallback, context: Any?) -> SuspensionCommand
-): BooleanAndRunningCoroutineContextCallback =
-    object: BooleanAndRunningCoroutineContextCallback() {
-        override fun apply(context: Any?): SuspensionCommand =
-            body(this, context)
-    }
 
 private inline fun suspendCoroutineInternal(trySuspend: () -> Boolean) {
     if (!trySuspend()) {
-        error("Suspending failed. Are you in the right coroutine context?")
+        error("Suspension had failed. Are you in the right coroutine context?")
     }
 }
 

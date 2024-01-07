@@ -86,6 +86,7 @@ private val typeReplacement = mapOf(
     "kotlin/jvm/internal/Ref" to "dev/reformator/loomoroutines/common/internal/kotlinstdlibstub/Ref",
     "kotlin/jvm/internal/Ref\$ObjectRef" to "dev/reformator/loomoroutines/common/internal/kotlinstdlibstub/Ref\$ObjectRef",
     "kotlin/jvm/internal/Ref\$IntRef" to "dev/reformator/loomoroutines/common/internal/kotlinstdlibstub/Ref\$IntRef",
+    "kotlin/jvm/internal/Ref\$BooleanRef" to "dev/reformator/loomoroutines/common/internal/kotlinstdlibstub/Ref\$BooleanRef",
 
     "kotlin/NoWhenBranchMatchedException" to "dev/reformator/loomoroutines/common/internal/kotlinstdlibstub/KotlinException",
     "kotlin/KotlinNothingValueException" to "dev/reformator/loomoroutines/common/internal/kotlinstdlibstub/KotlinException",
