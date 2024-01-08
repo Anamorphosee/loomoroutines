@@ -28,7 +28,18 @@ private class LoomSuspendedCoroutine<out T>(private val continuation: LoomContin
                 if (continuation.next == null) {
                     return LoomSuspendedCoroutine(continuation)
                 }
-                Continuation.yield(scope)
+                if (!Continuation.yield(scope)) {
+                    var suspendingContinuation = continuation.next!!
+                    while (true) {
+                        val next = suspendingContinuation.next
+                        if (next != null) {
+                            suspendingContinuation = next
+                        } else {
+                            suspendingContinuation.next = failedLoomContinuation
+                            break
+                        }
+                    }
+                }
             }
         } else {
             error("Suspended coroutine has already resumed.")
@@ -37,6 +48,8 @@ private class LoomSuspendedCoroutine<out T>(private val continuation: LoomContin
 }
 
 private val scope = ContinuationScope("Loomoroutines")
+
+private val failedLoomContinuation = LoomContinuation(null) { }
 
 private class LoomContinuation<out T>(
     val coroutineContext: T,
@@ -52,9 +65,15 @@ private class LoomContinuation<out T>(
             }
             currentContinuation === this
         }
+        val cachedNext = next
         next = null
-        yield(scope)
+        if (!yield(scope) || next == failedLoomContinuation) {
+            next = cachedNext
+            error("Suspension has failed. Current thread is pinned.")
+        }
     }
+
+    override fun onPinned(reason: Pinned) { }
 }
 
 private fun getCurrentContinuation(): LoomContinuation<*>? =

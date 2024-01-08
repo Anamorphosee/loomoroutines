@@ -26,7 +26,7 @@ private class LoomSuspendedCoroutine<out T>(private val continuation: Any) : Sus
                     return CompletedCoroutineImpl(coroutineContext)
                 }
                 if (LoomoroutinesBypassJpmsContinuationSupport.getNext(continuation) != null) {
-                    LoomoroutinesBypassJpmsContinuationSupport.yield()
+                    LoomoroutinesBypassJpmsContinuationSupport.yieldInSuspend(continuation)
                 } else {
                     return LoomSuspendedCoroutine(continuation)
                 }

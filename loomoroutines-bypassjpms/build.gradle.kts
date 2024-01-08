@@ -1,15 +1,10 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-import org.jetbrains.kotlin.gradle.plugin.mpp.pm20.util.distsDirectory
 import org.objectweb.asm.ClassReader
 import org.objectweb.asm.ClassWriter
+import org.objectweb.asm.Handle
 import org.objectweb.asm.Opcodes
-import org.objectweb.asm.tree.ClassNode
-import org.objectweb.asm.tree.FieldInsnNode
-import org.objectweb.asm.tree.FrameNode
-import org.objectweb.asm.tree.LocalVariableNode
-import org.objectweb.asm.tree.MethodInsnNode
-import org.objectweb.asm.tree.MethodNode
-import org.objectweb.asm.tree.TypeInsnNode
+import org.objectweb.asm.Type
+import org.objectweb.asm.tree.*
 
 plugins {
     id("dev.reformator.javalibinkotlin")
@@ -80,6 +75,17 @@ tasks.withType<JavaCompile> {
                         instruction.owner = instruction.owner.transform
                     } else if (instruction is TypeInsnNode) {
                         instruction.desc = instruction.desc.transform
+                    } else if (instruction is InvokeDynamicInsnNode) {
+                        instruction.desc = instruction.desc.transform
+                        instruction.bsm = instruction.bsm.transform
+                        for (index in instruction.bsmArgs.indices) {
+                            val arg = instruction.bsmArgs[index]
+                            if (arg is Type) {
+                                instruction.bsmArgs[index] = arg.transform
+                            } else if (arg is Handle) {
+                                instruction.bsmArgs[index] = arg.transform
+                            }
+                        }
                     }
                 }
                 method.desc = method.desc.transform
@@ -100,6 +106,27 @@ tasks.withType<JavaCompile> {
 
 private val String?.transform: String?
     get() = this?.replace("java/lang_/LoomContinuation", "java/lang/LoomContinuation")
+
+private val Handle?.transform: Handle?
+    get() = this?.run {
+        val owner = this.owner.transform
+        val desc = this.desc.transform
+        if (owner != this.owner || desc != this.desc) {
+            Handle(tag, owner, name, desc, isInterface)
+        } else {
+            this
+        }
+    }
+
+private val Type?.transform: Type?
+    get() = this?.run {
+        val desc = descriptor.transform
+        if (desc != descriptor) {
+            Type.getType(desc)
+        } else {
+            this
+        }
+    }
 
 sourceSets {
     main {

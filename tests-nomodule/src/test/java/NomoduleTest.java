@@ -1,23 +1,28 @@
 import dev.reformator.loomoroutines.common.CompletedCoroutine;
-import dev.reformator.loomoroutines.common.CoroutineUtils;
 import dev.reformator.loomoroutines.common.GeneratorUtils;
 import dev.reformator.loomoroutines.common.SuspendedCoroutine;
+import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Objects;
+
+import static dev.reformator.loomoroutines.common.CoroutineUtils.*;
+import static dev.reformator.loomoroutines.common.GeneratorUtils.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class NomoduleTest {
     @Test
     public void testGenerators() {
-        var iterator = GeneratorUtils.loomIterator(scope -> {
+        var iterator = loomIterator(scope -> {
             for (int i = 0; i < 10; i++) {
                 scope.emit(i);
             }
             scope.emit(10);
-            for (var value: GeneratorUtils.loomIterable(innerScope  -> {
+            for (var value: loomIterable(innerScope  -> {
                 for (int i = 11; i < 20; i++) {
                     if (i % 2 == 0) {
                         innerScope.emit(i);
@@ -48,52 +53,52 @@ public class NomoduleTest {
             }
         });
 
-        for (int i = 0; i <= 30; i++) {
-            Assertions.assertTrue(iterator.hasNext());
-            Assertions.assertEquals(i, iterator.next());
+        for (int i = 0; i<= 30; i++) {
+            assertTrue(iterator.hasNext());
+            assertEquals(i, iterator.next());
         }
-        Assertions.assertFalse(iterator.hasNext());
-        Assertions.assertThrows(NoSuchElementException.class, iterator::next);
+        assertFalse(iterator.hasNext());
+        assertThrows(NoSuchElementException.class, iterator::next);
     }
 
     @Test
     public void testCoroutineContextApi() {
         var context1CallCounter = new MutableInt();
-        CoroutineUtils.createCoroutine("context1", () -> {
+        createCoroutine("context1", () -> {
             context1CallCounter.increment();
 
-            Assertions.assertEquals(
+            assertEquals(
                     List.of("context1"),
-                    CoroutineUtils.getRunningCoroutinesContexts()
+                    getRunningCoroutinesContexts()
             );
-            Assertions.assertEquals(1, CoroutineUtils.getRunningCoroutinesNumber());
+            assertEquals(1, getRunningCoroutinesNumber());
 
             var callCounter = new MutableInt();
-            Assertions.assertEquals("context1", CoroutineUtils.getRunningCoroutineContext(context -> {
+            assertEquals("context1", getRunningCoroutineContext(context -> {
                 callCounter.increment();
-                Assertions.assertEquals("context1", context);
+                assertEquals("context1", context);
                 return true;
             }));
-            Assertions.assertEquals(1, callCounter.intValue());
+            assertEquals(1, callCounter.intValue());
 
             var context2CallCounter = new MutableInt();
-            CoroutineUtils.createCoroutine("context2", () -> {
+            createCoroutine("context2", () -> {
                 context2CallCounter.increment();
 
-                Assertions.assertEquals(
+                assertEquals(
                         List.of("context2", "context1"),
-                        CoroutineUtils.getRunningCoroutinesContexts()
+                        getRunningCoroutinesContexts()
                 );
-                Assertions.assertEquals(2, CoroutineUtils.getRunningCoroutinesNumber());
+                assertEquals(2, getRunningCoroutinesNumber());
 
                 callCounter.setValue(0);
-                Assertions.assertEquals("context1", CoroutineUtils.getRunningCoroutineContext(context -> {
+                assertEquals("context1", getRunningCoroutineContext(context -> {
                     boolean result;
                     if (callCounter.intValue() == 0) {
-                        Assertions.assertEquals("context2", context);
+                        assertEquals("context2", context);
                         result = false;
                     } else if (callCounter.intValue() == 1) {
-                        Assertions.assertEquals("context1", context);
+                        assertEquals("context1", context);
                         result = true;
                     } else {
                         throw Assertions.<RuntimeException>fail("invalid callCounter: " + callCounter.intValue());
@@ -101,62 +106,108 @@ public class NomoduleTest {
                     callCounter.increment();
                     return result;
                 }));
-                Assertions.assertEquals(2, callCounter.intValue());
+                assertEquals(2, callCounter.intValue());
 
                 var context3CallCounter = new MutableInt();
-                var coroutine3 = CoroutineUtils.createCoroutine(List.of(120), () -> {
+                var coroutine3 = createCoroutine(List.of(120), () -> {
                     context3CallCounter.increment();
 
                     callCounter.setValue(0);
-                    Assertions.assertEquals(
+                    assertEquals(
                             List.of(120),
-                            CoroutineUtils.getRunningCoroutineContext(List.class, list -> {
+                            getRunningCoroutineContext(List.class, list -> {
                                 callCounter.increment();
-                                Assertions.assertEquals(120, list.get(0));
+                                assertEquals(120, list.get(0));
                                 return true;
                             })
                     );
-                    Assertions.assertEquals(1, callCounter.intValue());
+                    assertEquals(1, callCounter.intValue());
 
-                    Assertions.assertEquals(List.of(120), CoroutineUtils.getRunningCoroutineContext(List.class));
+                    assertEquals(List.of(120), getRunningCoroutineContext(List.class));
                 });
-                Assertions.assertEquals(0, context3CallCounter.intValue());
-                Assertions.assertEquals(
+                assertEquals(0, context3CallCounter.intValue());
+                assertEquals(
                         List.of(120),
-                        Assertions.assertInstanceOf(CompletedCoroutine.class, coroutine3.resume()).getCoroutineContext()
+                        assertInstanceOf(CompletedCoroutine.class, coroutine3.resume()).getCoroutineContext()
                 );
-                Assertions.assertEquals(1, context3CallCounter.intValue());
+                assertEquals(1, context3CallCounter.intValue());
             }).resume();
-            Assertions.assertEquals(1, context2CallCounter.intValue());
+            assertEquals(1, context2CallCounter.intValue());
         }).resume();
-        Assertions.assertEquals(1, context1CallCounter.intValue());
+        assertEquals(1, context1CallCounter.intValue());
     }
 
     @Test
     public void testCoroutineSuspensionApi() {
         var callCounter = new MutableInt();
-        var coroutine1 = CoroutineUtils.createCoroutine("context1", () -> {
-            Assertions.assertEquals(1, callCounter.getAndIncrement());
-            Assertions.assertFalse(CoroutineUtils.trySuspendCoroutine(context -> {
-                Assertions.assertEquals(2, callCounter.getAndIncrement());
-                Assertions.assertEquals("context1", context);
+        var coroutine1 = createCoroutine("context1", () -> {
+            assertEquals(1, callCounter.getAndIncrement());
+            assertFalse(trySuspendCoroutine(context -> {
+                assertEquals(2, callCounter.getAndIncrement());
+                assertEquals("context1", context);
                 return false;
             }));
-            Assertions.assertEquals(3, callCounter.getAndIncrement());
-            Assertions.assertTrue(CoroutineUtils.trySuspendCoroutine(context -> {
-                Assertions.assertEquals(4, callCounter.getAndIncrement());
-                Assertions.assertEquals("context1", context);
+            assertEquals(3, callCounter.getAndIncrement());
+            assertTrue(trySuspendCoroutine(context -> {
+                assertEquals(4, callCounter.getAndIncrement());
+                assertEquals("context1", context);
                 return true;
             }));
-            Assertions.assertEquals(6, callCounter.getAndIncrement());
+            assertEquals(6, callCounter.getAndIncrement());
         });
-        Assertions.assertEquals("context1", coroutine1.getCoroutineContext());
-        Assertions.assertEquals(0, callCounter.getAndIncrement());
-        var coroutine2 = Assertions.assertInstanceOf(SuspendedCoroutine.class, coroutine1.resume());
-        Assertions.assertEquals("context1", coroutine2.getCoroutineContext());
-        Assertions.assertEquals(5, callCounter.getAndIncrement());
-        var coroutine3 = Assertions.assertInstanceOf(CompletedCoroutine.class, coroutine2.resume());
-        Assertions.assertEquals(7, callCounter.getAndIncrement());
-        Assertions.assertEquals("context1", coroutine3.getCoroutineContext());
+        assertEquals("context1", coroutine1.getCoroutineContext());
+        assertEquals(0, callCounter.getAndIncrement());
+        var coroutine2 = assertInstanceOf(SuspendedCoroutine.class, coroutine1.resume());
+        assertEquals("context1", coroutine2.getCoroutineContext());
+        assertEquals(5, callCounter.getAndIncrement());
+        var coroutine3 = assertInstanceOf(CompletedCoroutine.class, coroutine2.resume());
+        assertEquals(7, callCounter.getAndIncrement());
+        assertEquals("context1", coroutine3.getCoroutineContext());
+    }
+
+    @Test
+    public void testPinnedVirtualThread() throws InterruptedException {
+        var completed =new MutableBoolean(false);
+        Thread.startVirtualThread(() -> {
+            synchronized (new Object()) {
+                createCoroutine("context1", () -> {
+                    try {
+                        Thread.sleep(100);
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                }).resume();
+            }
+            completed.setTrue();
+        }).join();
+        assertTrue(completed.getValue());
+    }
+
+    @Test
+    public void testFailedSuspend() {
+        try {
+            createCoroutine("context1", () -> {
+                synchronized (new Object()) {
+                    createCoroutine("context2", () -> {
+                        suspendCoroutine(c -> Objects.equals(c, "context1"));
+                    }).resume();
+                }
+            }).resume();
+        } catch (IllegalStateException e) {
+            assertTrue(e.getMessage().contains("Current thread is pinned"));
+            return;
+        }
+        fail();
+    }
+
+    @Test
+    public void testNotFailedSuspend() {
+        createCoroutine("context1", () -> {
+            synchronized (new Object()) {
+                createCoroutine("context2", () -> {
+                    suspendCoroutine(c -> Objects.equals(c, "context2"));
+                }).resume();
+            }
+        }).resume();
     }
 }

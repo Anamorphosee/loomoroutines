@@ -8,6 +8,7 @@ repositories {
 
 dependencies {
     testImplementation(project(":loomoroutines-common"))
+    testImplementation(project(":loomoroutines-dispatcher"))
     testImplementation("org.junit.jupiter:junit-jupiter-api:${properties["jupiterVersion"]}")
     testImplementation("org.apache.commons:commons-lang3:${properties["commonsLang3Version"]}")
     testRuntimeOnly("ch.qos.logback:logback-classic:${properties["logbackVersion"]}")

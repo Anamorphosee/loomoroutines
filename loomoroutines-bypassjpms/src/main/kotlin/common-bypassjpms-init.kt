@@ -15,7 +15,7 @@ internal object LoomoroutinesBypassJpmsContinuationSupport {
     private val next: VarHandle
     private val run: MethodHandle
     private val isDone: MethodHandle
-    private val yield: MethodHandle
+    private val yieldInSuspend: MethodHandle
     private val _assertionEnabled: VarHandle
 
     init {
@@ -35,7 +35,7 @@ internal object LoomoroutinesBypassJpmsContinuationSupport {
         next = lookup.findVarHandle(loomContinuationClass, "next", loomContinuationClass)
         run = lookup.findVirtual(loomContinuationClass, "run", MethodType.methodType(Void.TYPE))
         isDone = lookup.findVirtual(loomContinuationClass, "isDone", MethodType.methodType(Boolean::class.javaPrimitiveType))
-        yield = lookup.findStatic(loomContinuationClass, "yield", MethodType.methodType(Void.TYPE))
+        yieldInSuspend = lookup.findVirtual(loomContinuationClass, "yieldInSuspend", MethodType.methodType(Void.TYPE))
         _assertionEnabled = lookup.findStaticVarHandle(loomContinuationClass, "assertionEnabled", Boolean::class.javaPrimitiveType)
     }
 
@@ -66,8 +66,8 @@ internal object LoomoroutinesBypassJpmsContinuationSupport {
     fun isDone(loomContinuation: Any): Boolean =
         isDone.invoke(loomContinuation) as Boolean
 
-    fun yield() {
-        yield.invoke()
+    fun yieldInSuspend(loomContinuation: Any) {
+        yieldInSuspend.invoke(loomContinuation)
     }
 
     var assertionEnabled: Boolean
