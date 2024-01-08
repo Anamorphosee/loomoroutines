@@ -6,6 +6,9 @@ import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import javax.swing.SwingUtilities
 
+/**
+ * A [Dispatcher] that executes actions in virtual threads.
+ */
 @Suppress("Since15")
 object VirtualThreadsDispatcher: Dispatcher {
     override fun execute(action: Runnable) {
@@ -23,6 +26,9 @@ object VirtualThreadsDispatcher: Dispatcher {
         Thread.currentThread().isVirtual
 }
 
+/**
+ * A [Dispatcher] that executes actions in a Swing event dispatcher thread.
+ */
 object SwingDispatcher: Dispatcher {
     private val scheduledExecutor = Executors.newSingleThreadScheduledExecutor()
 

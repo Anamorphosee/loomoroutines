@@ -16,16 +16,35 @@ import dev.reformator.loomoroutines.dispatcher.internal.dispatch
 import java.time.Duration
 import java.util.concurrent.ScheduledExecutorService
 
+/**
+ * Optional annotation to warn that the method must be called only inside a dispatcher coroutine.
+ */
 @Target(AnnotationTarget.FUNCTION)
 annotation class CallOnlyInDispatcher
 
+/**
+ * Is current thread running in a dispatcher coroutine.
+ */
 val isInDispatcher: Boolean
     get() = getRunningCoroutineContext<DispatcherContext<*>>() != null
 
+/**
+ * Notifier about completing of an awaiting.
+ * @see await
+ */
 fun interface Notifier {
+    /**
+     * Notify the dispatcher coroutine that the awaiting has completed.
+     * Must be called only once for each [Notifier].
+     * @see await
+     */
     operator fun invoke()
 }
 
+/**
+ * Suspend a dispatcher coroutine until a [Notifier] will be invoked.
+ * The method suspend a dispatcher coroutine and call [callback] with a [Notifier] which must be invoked to continue the coroutine.
+ */
 @CallOnlyInDispatcher
 fun await(callback: Consumer<Notifier>) {
     sendDispatcherEvent {
@@ -33,6 +52,9 @@ fun await(callback: Consumer<Notifier>) {
     }
 }
 
+/**
+ * Suspend a dispatcher coroutine and continue it after a [delay][duration].
+ */
 @CallOnlyInDispatcher
 fun delay(duration: Duration) {
     sendDispatcherEvent {
@@ -40,6 +62,11 @@ fun delay(duration: Duration) {
     }
 }
 
+/**
+ * Execute an [action] possibly switching a [Dispatcher].
+ * @param dispatcher a dispatcher in which [action] will be executed
+ * @return [action]'s result
+ */
 @CallOnlyInDispatcher
 fun <T> doIn(dispatcher: Dispatcher, action: Supplier<T>): T {
     val context = getMandatoryRunningCoroutineDispatcherContext()
@@ -58,6 +85,9 @@ fun <T> doIn(dispatcher: Dispatcher, action: Supplier<T>): T {
     }
 }
 
+/**
+ * Create a dispatcher coroutine that will run in [this] and execute [body].
+ */
 fun <T> Dispatcher.dispatch(body: Supplier<T>): Promise<T> {
     val context = DispatcherContextImpl<T>()
     val result = Ref.ObjectRef<T>()
@@ -66,6 +96,9 @@ fun <T> Dispatcher.dispatch(body: Supplier<T>): Promise<T> {
     return context.promise
 }
 
+/**
+ * Create a [CloseableDispatcher] that executes actions in [this].
+ */
 fun ScheduledExecutorService.toDispatcher(): CloseableDispatcher =
     ScheduledExecutorServiceDispatcher(this)
 
