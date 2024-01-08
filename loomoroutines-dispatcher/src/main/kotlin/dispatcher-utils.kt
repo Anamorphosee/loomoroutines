@@ -77,9 +77,12 @@ fun <T> doIn(dispatcher: Dispatcher, action: Supplier<T>): T {
         sendDispatcherEvent {
             setSwitchLastEvent(dispatcher)
         }
-        val result = action()
-        sendDispatcherEvent {
-            setSwitchLastEvent(oldDispatcher)
+        val result = try {
+            action()
+        } finally {
+            sendDispatcherEvent {
+                setSwitchLastEvent(oldDispatcher)
+            }
         }
         return result
     }

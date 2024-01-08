@@ -1,18 +1,14 @@
 import dev.reformator.loomoroutines.dispatcher.SwingDispatcher;
 import dev.reformator.loomoroutines.dispatcher.VirtualThreadsDispatcher;
-import org.apache.commons.lang3.mutable.Mutable;
-import org.apache.commons.lang3.mutable.MutableObject;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
-import java.net.URL;
 import java.time.Duration;
 import java.util.regex.Pattern;
 
@@ -33,7 +29,7 @@ public class ExampleSwing {
         panel.add(button);
         panel.add(imagePanel);
         frame.add(panel);
-        frame.setSize(600, 600);
+        frame.setSize(1000, 500);
         frame.setVisible(true);
 
         button.addActionListener(e -> dispatch(SwingDispatcher.INSTANCE, () -> {
@@ -44,10 +40,9 @@ public class ExampleSwing {
             } else {
                 button.setText("This one!");
                 var cachedPickingCatCounter = pickingCatCounter;
-                while (true) {
-                    var bufferedImage = doIn(VirtualThreadsDispatcher.INSTANCE, () -> {
-                        var bufferedImageMut = new MutableObject<BufferedImage>();
-                        var thread = Thread.startVirtualThread(() -> {
+                try {
+                    while (true) {
+                        var bufferedImage = doIn(VirtualThreadsDispatcher.INSTANCE, () -> {
                             String url;
                             {
                                 String json;
@@ -63,30 +58,31 @@ public class ExampleSwing {
                                 url = mather.group(1);
                             }
                             try (var stream = URI.create(url).toURL().openStream()) {
-                                bufferedImageMut.setValue(ImageIO.read(stream));
-                            } catch (Throwable ex) {
+                                return ImageIO.read(stream);
+                            } catch (IOException ex) {
                                 throw new RuntimeException(ex);
                             }
                         });
-                        try {
-                            thread.join();
-                        } catch (InterruptedException ex) {
-                            throw new RuntimeException(ex);
+
+                        if (pickingCatCounter != cachedPickingCatCounter) {
+                            return null;
                         }
-                        return bufferedImageMut.getValue();
-                    });
 
-                    if (pickingCatCounter != cachedPickingCatCounter) {
-                        return null;
+                        imagePanel.setImage(bufferedImage);
+
+                        delay(Duration.ofSeconds(1));
+
+                        if (pickingCatCounter != cachedPickingCatCounter) {
+                            return null;
+                        }
                     }
-
-                    imagePanel.setImage(bufferedImage);
-
-                    delay(Duration.ofSeconds(1));
-
-                    if (pickingCatCounter != cachedPickingCatCounter) {
-                        return null;
+                } catch (Throwable ex) {
+                    if (pickingCatCounter == cachedPickingCatCounter) {
+                        ex.printStackTrace();
+                        pickingCatCounter++;
+                        button.setText("Exception: " + ex.getMessage() + ". Try again?");
                     }
+                    return null;
                 }
             }
         }));
