@@ -1,6 +1,6 @@
 ![Maven Central](https://img.shields.io/maven-central/v/dev.reformator.loomoroutines/loomoroutines-common)
 # Loomoroutines
-Library for native Java coroutines utilizing [Project Loom](https://openjdk.org/projects/loom/).
+Library for the native Java coroutines utilizing [Project Loom](https://openjdk.org/projects/loom/).
 
 Supports JDK 19 or higher.
 
