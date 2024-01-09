@@ -129,7 +129,7 @@ Pay attention that the button click event handler contains potentionally long-ru
 
 ### Loomoroutines common API
 The dependency is `dev.reformator.loomoroutines:loomoroutines-common:1.0.0`.
-Contains low-level coroutines API. Most of which is located in the utility class `dev.reformator.loomoroutines.common.CoroutineUtils`.
+It contains low-level coroutines API. Most of which is located in the utility class `dev.reformator.loomoroutines.common.CoroutineUtils`.
 Moreover, there is an implementation of the Generator Pattern. Example:
 ```java
 import java.math.BigInteger;
@@ -154,5 +154,6 @@ public class ExampleGenerator {
 ```
 
 ### Support library for bypassing JPMS
-To use Loomoroutines you have to add JVM command line argument `--add-exports java.base/jdk.internal.vm=ALL-UNNAMED` or add this artifact in the classpath or modulepath.
+To use Loomoroutines you have to add the JVM command line argument `--add-exports java.base/jdk.internal.vm=ALL-UNNAMED` or add this artifact in the classpath or modulepath.
 The corresponding dependency is `dev.reformator.loomoroutines:loomoroutines-bypassjpms:1.0.0`.
+And in the JDK below 21 you have to add JVM argument `--enable-preview`.
