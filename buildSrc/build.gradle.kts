@@ -11,6 +11,7 @@ repositories {
 dependencies {
     implementation("org.ow2.asm:asm-util:${properties["asmVersion"]}")
     implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:${properties["kotlinVersion"]}")
+    implementation("org.jetbrains.dokka:dokka-gradle-plugin:${properties["dokkaVersion"]}")
 }
 
 kotlin {
